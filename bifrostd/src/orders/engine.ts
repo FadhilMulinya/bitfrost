@@ -23,7 +23,7 @@
  * polling) belongs to the caller (smoke runner / future api module).
  */
 import { sha256 } from "@noble/hashes/sha2.js";
-import { BifrostError, expiryInvariantHolds, type ErrorCode, type Order, type ProtocolError } from "@bifrost/sdk";
+import { BifrostError, expiryInvariantHolds, type ErrorCode, type Order, type ProtocolError } from "bifrost-sdk";
 import { assertHash256, type Hash256, type SwapLegEvent } from "../adapters/types.js";
 import type { NetworkPorts } from "./ports.js";
 import type { OrderStore } from "./store.js";

@@ -27,7 +27,7 @@ import { encodeU128Hex, encodeU64Hex } from "../fnn/codec.js";
 import { OrderEngine } from "../orders/engine.js";
 import { fiberPorts, lightningPorts } from "../orders/ports.js";
 import { FileOrderStore } from "../orders/store.js";
-import { outgoingBlocksToMs, incomingBlocksToMs, type Order, type OrderState } from "@bifrost/sdk";
+import { outgoingBlocksToMs, incomingBlocksToMs, type Order, type OrderState } from "bifrost-sdk";
 
 const HOUR = 3_600_000;
 const env = (k: string, dflt?: string): string => {

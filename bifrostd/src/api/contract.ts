@@ -13,7 +13,7 @@
  * sdk/src/client.ts's actual fetch/parse calls, which are the tested,
  * load-bearing contract for those two routes.
  */
-import type { Order, OrderState } from "@bifrost/sdk";
+import type { Order, OrderState } from "bifrost-sdk";
 
 export const ENDPOINTS = {
   quotes: "/v1/quotes",

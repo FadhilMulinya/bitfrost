@@ -27,8 +27,8 @@ import {
   signingDigest,
   type Quote,
   type QuoteRequest,
-} from "@bifrost/sdk";
-import type { Pair } from "@bifrost/sdk";
+} from "bifrost-sdk";
+import type { Pair } from "bifrost-sdk";
 import { mulDivCeil, mulDivFloor, normalize, type Rational } from "./rational.js";
 import type { PricingContext, PricingStrategy } from "./pricing.js";
 

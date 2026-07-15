@@ -14,7 +14,7 @@
  * QuoteService itself (rfq/quote-service.ts) is stateless per PROTOCOL
  * §4.1-4.2 and tracks nothing across calls.
  */
-import type { Quote, QuoteRequest } from "@bifrost/sdk";
+import type { Quote, QuoteRequest } from "bifrost-sdk";
 import type { QuoteStats } from "./contract.js";
 
 export interface CachedQuote {

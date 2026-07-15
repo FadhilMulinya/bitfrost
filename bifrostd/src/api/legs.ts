@@ -4,7 +4,7 @@
  * §6 conservative conversions), generalized from fixed demo amounts to
  * whatever a redeemed Quote actually specifies.
  */
-import { detectInvoice, incomingBlocksToMs, outgoingBlocksToMs, type AssetRef } from "@bifrost/sdk";
+import { detectInvoice, incomingBlocksToMs, outgoingBlocksToMs, type AssetRef } from "bifrost-sdk";
 import type { LightningAdapter } from "../adapters/lightning.js";
 import type { Hash256 } from "../adapters/types.js";
 

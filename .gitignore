@@ -6,3 +6,4 @@ dist/
 **/spec/
 docs/
 .claude
+.gstack/

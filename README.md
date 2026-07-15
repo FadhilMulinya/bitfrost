@@ -9,7 +9,7 @@ Built for the "Gone in 60ms" Fiber Network Infrastructure Hackathon.
 - `spec/SYSTEM-DESIGN.md` — full architecture: modules, flows, security, deployment
 - `CLAUDE.md` — project context for Claude Code / gstack agents
 - `docs/STATUS.md` — honesty table: what's working, what's mocked, what's a known gap
-- `sdk/` — `@bifrost/sdk` TypeScript client (types, canonical JSON, BIP-340 verification, invoice decode, client facade)
+- `sdk/` — `bifrost-sdk` TypeScript client (types, canonical JSON, BIP-340 verification, invoice decode, client facade)
 - `bifrostd/` — the hub daemon: Fiber/Lightning adapters, `OrderEngine` (the HTLC state machine), RFQ pricing, and the `api/` HTTP+WS gateway (SYSTEM-DESIGN §4.5)
 - `dashboard/` — operator UI (order table, inventory, quote hit-rate, ExpiryGuard health, swap-theater animation) against the real `bifrostd` api/
 - `registry/` — hub discovery service (signed advertisements)
@@ -44,7 +44,7 @@ docker compose -f deploy/docker-compose.dev.yml --env-file deploy/.env up -d --b
 deploy/scripts/fund-regtest.sh
 
 # 4. Build the SDK (bifrostd and dashboard both depend on it via
-#    "@bifrost/sdk": "file:../sdk" — build it first or their installs/builds
+#    "bifrost-sdk": "file:../sdk" — build it first or their installs/builds
 #    will fail to resolve it).
 cd sdk && npm install && npm run build && cd ..
 
@@ -102,6 +102,26 @@ If you'd rather not run the Docker stack at all, `npm run mock` (in `dashboard/`
 
 ## SDK quickstart
 
+Published as `bifrost-sdk` on npm — `npm install bifrost-sdk` in your own
+project and import it by name:
+
+```ts
+import { Bifrost } from "bifrost-sdk";
+
+const bf = new Bifrost({});
+const { order, quote } = await bf.payAnyInvoice(
+  "http://127.0.0.1:8391/v1",
+  "lnbcrt...",
+  { network: "fiber", unit: "shannon" },
+);
+console.log(order.orderId, order.state);
+```
+
+Working **inside this repo** instead (no publish/install round-trip)? Build
+the local package and import the built output directly — same pattern
+bifrostd/dashboard use via `"bifrost-sdk": "file:../sdk"` in their
+package.json:
+
 ```bash
 cd sdk && npm install && npm run build
 ```
@@ -110,9 +130,6 @@ Save as `bifrost/quickstart.mjs` (repo root, a sibling of `sdk/` — adjust the
 import path if you put it elsewhere), then `node quickstart.mjs`:
 
 ```ts
-// Not published yet (see "Deploy the SDK" below) — import the built local
-// package directly, same way bifrostd/dashboard do via "file:../sdk" in
-// their package.json (here: a plain relative path to the built output).
 import { Bifrost } from "./sdk/dist/index.js";
 
 const bf = new Bifrost({});
@@ -130,32 +147,28 @@ console.log(order.orderId, order.state); // watch it settle: bf.watchOrder(hubAp
 
 ## Deploy the SDK (npm publish)
 
+**Already published:** `bifrost-sdk@0.1.0` on npm.
+
 ```bash
-cd sdk && npm publish --access public
+cd sdk && npm publish
 ```
 
 `prepublishOnly` (typecheck → test → build) runs automatically and blocks the
-publish if any step fails — no separate build command needed first. `--access
-public` is required because `@bifrost/sdk` is a **scoped** package
-(`@bifrost/...`) and npm defaults new scoped packages to private.
+publish if any step fails — no separate build command needed first. Unlike
+the original `@bifrost/sdk` scoped name, `bifrost-sdk` is unscoped, so no
+`--access public` flag or org access is needed — just `npm login` with
+publish rights to the `bifrost-sdk` package name itself (whoever published
+0.1.0 owns it; get added as a maintainer for subsequent releases, or bump to
+your own unique name if you don't have access).
 
-This requires being logged in (`npm login`) with publish rights to the
-`@bifrost` npm org — or change the `name` field in `sdk/package.json` to your
-own scope (e.g. `@yourname/bifrost-sdk`) if you don't have access to it.
-
-Verify what will actually get published (never publishes anything) with:
+Verify what would get published (never publishes anything) with:
 
 ```bash
 cd sdk && npm publish --dry-run
 ```
 
 `sdk/package.json`'s `files: ["dist"]` + `sdk/.npmignore` keep the tarball to
-`dist/` + `package.json` only — verified 2026-07-15: 17 files, 9.3 kB packed,
-no `src/`/`test/`/`scripts/`.
-
-<!-- TODO(unverified): this repo has never actually run a REAL `npm publish`
-     (only --dry-run, deliberately) — no confirmation that the `@bifrost`
-     npm org exists or that any account has publish rights to it. -->
+`dist/` + `package.json` only.
 
 ---
 

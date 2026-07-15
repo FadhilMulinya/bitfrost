@@ -20,7 +20,7 @@ import type { LightningAdapter } from "../adapters/lightning.js";
 import type { Hash256, SwapLegEvent } from "../adapters/types.js";
 import type { OrderEngine } from "../orders/engine.js";
 import type { OrderStore } from "../orders/store.js";
-import type { Order, OrderState } from "@bifrost/sdk";
+import type { Order, OrderState } from "bifrost-sdk";
 
 const TERMINAL: ReadonlySet<OrderState> = new Set(["SUCCEEDED", "FAILED"]);
 const DISPATCHED: ReadonlySet<OrderState> = new Set(["OUTGOING_IN_FLIGHT", "OUTGOING_SETTLED", "SUCCEEDED"]);

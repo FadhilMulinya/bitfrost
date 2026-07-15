@@ -4,7 +4,7 @@
  * `inventorySkew(feedSpread(...))`; rejections short-circuit and use ONLY the
  * closed error registry codes valid for quote rejection (PROTOCOL §4.2/§7).
  */
-import type { QuoteRequest } from "@bifrost/sdk";
+import type { QuoteRequest } from "bifrost-sdk";
 import { applyPpm, normalize, rational, type Rational } from "./rational.js";
 
 /** Quote-rejection subset of the closed §7 registry. */

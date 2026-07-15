@@ -5,7 +5,7 @@
  * the same object or WS clients silently miss half the transitions.
  */
 import { WebSocket } from "ws";
-import type { Order } from "@bifrost/sdk";
+import type { Order } from "bifrost-sdk";
 import type { StreamMessage } from "./contract.js";
 
 const MAX_REJECTIONS = 20;

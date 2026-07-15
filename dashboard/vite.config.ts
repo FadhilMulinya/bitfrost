@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // REST + WS proxied to bifrostd (real gateway now — see bifrostd/src/api/,
 // previously the mock/server.ts placeholder) so the app always talks
@@ -12,7 +13,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const target = env["BIFROSTD_URL"] ?? "http://127.0.0.1:8391";
   return {
-    plugins: [react()],
+    plugins: [tailwindcss(), react()],
     server: {
       port: 5180,
       proxy: {

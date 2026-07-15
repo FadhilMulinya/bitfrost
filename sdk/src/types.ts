@@ -1,4 +1,4 @@
-/** @bifrost/sdk — protocol types for bifrost/0.1. Mirrors spec/PROTOCOL.md exactly. */
+/** bifrost-sdk — protocol types for bifrost/0.1. Mirrors spec/PROTOCOL.md exactly. */
 
 export const PROTOCOL_VERSION = "bifrost/0.1" as const;
 

@@ -1,4 +1,4 @@
-/** @bifrost/sdk — public API surface */
+/** bifrost-sdk — public API surface */
 export * from "./types.js";
 export * from "./errors.js";
 export * from "./invoice.js";

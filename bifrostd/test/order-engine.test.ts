@@ -21,7 +21,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
 import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
-import type { Order } from "@bifrost/sdk";
+import type { Order } from "bifrost-sdk";
 import { OrderEngine, type CreateOrderParams } from "../src/orders/engine.js";
 import { MemoryOrderStore, FileOrderStore } from "../src/orders/store.js";
 import type { HoldPort, PayPort, NetworkPorts, HoldInvoiceState, PaymentStateResult } from "../src/orders/ports.js";

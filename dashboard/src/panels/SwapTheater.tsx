@@ -5,7 +5,7 @@
  * incoming settle. The narration line spells out the safety invariant being
  * honored at each step (I1: never settle incoming before the preimage is known).
  */
-import type { Order, OrderState } from "@bifrost/sdk";
+import type { Order, OrderState } from "bifrost-sdk";
 import { fmtAmount } from "../api.ts";
 
 const STEPS: Array<{ state: OrderState; title: string; narration: string }> = [

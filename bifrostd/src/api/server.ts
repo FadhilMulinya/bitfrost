@@ -28,7 +28,7 @@ import {
   type OrderCreate,
   type ProtocolError,
   type QuoteRequest,
-} from "@bifrost/sdk";
+} from "bifrost-sdk";
 import type { FiberAdapter } from "../adapters/fiber.js";
 import type { LightningAdapter } from "../adapters/lightning.js";
 import type { OrderEngine } from "../orders/engine.js";

@@ -9,7 +9,7 @@
 import { createServer, type ServerResponse } from "node:http";
 import { createHash, randomBytes } from "node:crypto";
 import { WebSocketServer, WebSocket } from "ws";
-import type { Order, OrderState } from "@bifrost/sdk";
+import type { Order, OrderState } from "bifrost-sdk";
 import {
   ENDPOINTS,
   type HealthReport,

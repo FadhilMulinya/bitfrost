@@ -13,7 +13,7 @@
  * is on disk (fsync). One process owns the file; the engine serializes writes.
  */
 import { closeSync, fsyncSync, openSync, readFileSync, writeSync } from "node:fs";
-import type { Order, OrderState } from "@bifrost/sdk";
+import type { Order, OrderState } from "bifrost-sdk";
 import type { Hash256 } from "../adapters/types.js";
 
 const TERMINAL: ReadonlySet<OrderState> = new Set(["SUCCEEDED", "FAILED"]);

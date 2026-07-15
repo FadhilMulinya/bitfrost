@@ -1,5 +1,5 @@
 {
-  "name": "@bifrost/sdk",
+  "name": "bifrost-sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for the Bifrost RFQ protocol (bifrost/0.1) - pay any Lightning or Fiber invoice through Bifrost hubs",
   "type": "module",

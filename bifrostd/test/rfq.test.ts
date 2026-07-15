@@ -7,7 +7,7 @@
 import { describe, expect, it } from "vitest";
 import { schnorr } from "@noble/curves/secp256k1";
 import { bytesToHex } from "@noble/hashes/utils";
-import { BifrostError, PROTOCOL_VERSION, verifyQuote, type QuoteRequest } from "@bifrost/sdk";
+import { BifrostError, PROTOCOL_VERSION, verifyQuote, type QuoteRequest } from "bifrost-sdk";
 import { mulDivFloor, mulDivCeil, normalize, rational } from "../src/rfq/rational.js";
 import { staticPeg, feedSpread, inventorySkew, type PricingContext } from "../src/rfq/pricing.js";
 import { QuoteService } from "../src/rfq/quote-service.js";
