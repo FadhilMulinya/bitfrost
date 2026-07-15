@@ -1,0 +1,45 @@
+{
+  "comment": "Recorded LND REST shapes (grpc-gateway JSON). Sources: LND v0.19.x API docs for invoicesrpc/routerrpc; byte fields base64, int64 as strings; streams wrap frames as {result: …}.",
+  "add_hold_invoice": {
+    "payment_request": "lnbcrt1m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4js",
+    "add_index": "7",
+    "payment_addr": "kv0UsbbU5MU8Q5837OaHpqAFRdDZL/XwC9HneKVqtfE="
+  },
+  "settle_invoice": {},
+  "cancel_invoice": {},
+  "invoice_stream": [
+    { "result": { "state": "OPEN", "r_hash": "L9VLG21OTFPEOfN+OaHpp4BUXQ2S/18AvR53ilarXx0=", "payment_request": "lnbcrt1m1..." } },
+    { "result": { "state": "ACCEPTED", "r_hash": "L9VLG21OTFPEOfN+OaHpp4BUXQ2S/18AvR53ilarXx0=", "payment_request": "lnbcrt1m1..." } },
+    { "result": { "state": "SETTLED", "r_hash": "L9VLG21OTFPEOfN+OaHpp4BUXQ2S/18AvR53ilarXx0=", "payment_request": "lnbcrt1m1..." } }
+  ],
+  "send_payment_stream": [
+    { "result": { "status": "IN_FLIGHT", "payment_hash": "2fd54b1b6d4e4c53c439f37e39a1e9a780545d0d92ff5f00bd1e778a56ab5f1d", "payment_preimage": "0000000000000000000000000000000000000000000000000000000000000000", "failure_reason": "FAILURE_REASON_NONE" } }
+  ],
+  "track_payment_stream_success": [
+    { "result": { "status": "IN_FLIGHT", "payment_hash": "2fd54b1b6d4e4c53c439f37e39a1e9a780545d0d92ff5f00bd1e778a56ab5f1d", "payment_preimage": "0000000000000000000000000000000000000000000000000000000000000000", "failure_reason": "FAILURE_REASON_NONE" } },
+    { "result": { "status": "SUCCEEDED", "payment_hash": "2fd54b1b6d4e4c53c439f37e39a1e9a780545d0d92ff5f00bd1e778a56ab5f1d", "payment_preimage": "1111111111111111111111111111111111111111111111111111111111111111", "failure_reason": "FAILURE_REASON_NONE", "fee_sat": "1" } }
+  ],
+  "track_payment_stream_failed": [
+    { "result": { "status": "FAILED", "payment_hash": "2fd54b1b6d4e4c53c439f37e39a1e9a780545d0d92ff5f00bd1e778a56ab5f1d", "payment_preimage": "0000000000000000000000000000000000000000000000000000000000000000", "failure_reason": "FAILURE_REASON_NO_ROUTE" } }
+  ],
+  "decode_payreq": {
+    "destination": "03e347d089c071c27680e26299223e80a740cf2e3fbbade63dd6a614a8b567e21c",
+    "payment_hash": "2fd54b1b6d4e4c53c439f37e39a1e9a780545d0d92ff5f00bd1e778a56ab5f1d",
+    "num_satoshis": "100000",
+    "timestamp": "1784085000",
+    "expiry": "86400",
+    "cltv_expiry": "144"
+  },
+  "list_channels": {
+    "channels": [
+      {
+        "active": true,
+        "remote_pubkey": "02c9e223a9767b2e6a4c1f6ee84c1e0857f75061131b9d9713b6a26a75b47a37c3",
+        "channel_point": "a54cf3b1:0",
+        "local_balance": "900000",
+        "remote_balance": "96530"
+      }
+    ]
+  },
+  "error_stream_frame": { "error": { "code": 5, "message": "payment isn't initiated" } }
+}

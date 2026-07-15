@@ -11,8 +11,16 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^20.19.43",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@bifrost/sdk": "file:../sdk",
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0"
+  }
 }
