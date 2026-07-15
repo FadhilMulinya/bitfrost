@@ -1,0 +1,18 @@
+{
+  "name": "@bifrost/bifrostd",
+  "version": "0.0.1",
+  "description": "Bifrost hub daemon (placeholder). Currently ships only the FNN JSON-RPC hex codec used by deploy/ scripts.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": { "node": ">=20" }
+}
