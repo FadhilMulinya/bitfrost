@@ -68,14 +68,18 @@ export class Bifrost {
 
   /* ---------- Quotes ---------- */
 
-  async getQuote(hubApi: string, request: QuoteRequest): Promise<Quote> {
+  async getQuote(
+    hubApi: string,
+    request: QuoteRequest,
+    opts: { invoiceAmount?: bigint | undefined } = {},
+  ): Promise<Quote> {
     const res = await this.fetchImpl(`${hubApi}/quotes`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(request),
     });
     const quote = await this.json<Quote>(res);
-    verifyQuote(quote, request, { now: this.now() });
+    verifyQuote(quote, request, { now: this.now(), invoiceAmount: opts.invoiceAmount });
     return quote;
   }
 
@@ -122,6 +126,16 @@ export class Bifrost {
     give: Pair["give"],
   ): Promise<{ order: Order; quote: Quote }> {
     const info = detectInvoice(invoice);
+    // §9 item 3 requires quote.getAmount === invoice amount. A sub-sat (msat-
+    // precision) invoice has no sat-exact amount, which would silently skip
+    // that check and let the hub quote arbitrary amounts — reject instead.
+    if (info.amountMsat !== undefined && info.amount === undefined) {
+      throw new BifrostError(
+        "INVOICE_INVALID",
+        `invoice amount ${info.amountMsat} msat is not sat-exact; PAY_INVOICE requires a whole-sat amount`,
+        false,
+      );
+    }
     const get: Pair["get"] =
       info.network === "lightning"
         ? { network: "lightning", unit: "sat" }
@@ -129,11 +143,14 @@ export class Bifrost {
     const request: QuoteRequest = {
       protocol: PROTOCOL_VERSION,
       pair: { give, get },
-      amount: { side: "get", value: "0" }, // hub derives from invoice per PROTOCOL §4.1
+      // amount from the decoded invoice when it carries one; "0" lets the hub
+      // derive it from the invoice per PROTOCOL §4.1
+      amount: { side: "get", value: info.amount?.toString() ?? "0" },
       mode: "PAY_INVOICE",
       targetInvoice: info.raw,
     };
-    const quote = await this.getQuote(hubApi, request);
+    // §9 item 3: for PAY_INVOICE the quote's getAmount must equal the invoice amount
+    const quote = await this.getQuote(hubApi, request, { invoiceAmount: info.amount });
     const order = await this.createOrder(hubApi, {
       protocol: PROTOCOL_VERSION,
       quoteId: quote.quoteId,

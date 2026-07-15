@@ -30,7 +30,7 @@ function sameAsset(a: unknown, b: unknown): boolean {
 export function verifyQuote(
   quote: Quote,
   request: QuoteRequest,
-  opts: { now?: number; invoiceAmount?: bigint } = {},
+  opts: { now?: number; invoiceAmount?: bigint | undefined } = {},
 ): void {
   const now = opts.now ?? Date.now();
 
