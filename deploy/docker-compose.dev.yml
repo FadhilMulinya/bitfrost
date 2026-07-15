@@ -115,12 +115,17 @@ services:
       ckb: { condition: service_healthy }
       lnd-hub: { condition: service_started }
 
-  # Placeholder for the Bifrost daemon (Milestone 2+). Keeps the service name
-  # reserved and proves the compose wiring it will inherit.
+  # Bifrost daemon runtime. The repo is mounted at /repo and built on the
+  # host (pure-JS deps only — see bifrostd/src/orders/store.ts for why);
+  # smoke-bifrost.sh drives swaps via `compose exec bifrostd node …` inside
+  # the shared namespace, so FNN/LND RPC stays unpublished to the host.
+  # glibc image (not alpine): host-installed node_modules must resolve as-is.
   bifrostd:
-    image: alpine:3.20
+    image: node:22-bookworm-slim
     network_mode: "service:netbase"
-    command: ["sh", "-c", "echo 'bifrostd placeholder — implemented in Milestone 2' && sleep infinity"]
+    volumes:
+      - ..:/repo
+    command: ["sh", "-c", "echo 'bifrostd runtime ready (drive via smoke-bifrost.sh)' && sleep infinity"]
     init: true
     depends_on:
       fnn-hub: { condition: service_started }
