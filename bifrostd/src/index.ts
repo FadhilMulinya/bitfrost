@@ -10,12 +10,15 @@
  * See docs/STATUS.md for what's real vs. simplified in this v0.1 (no auth,
  * no webhooks, in-memory quote cache, staticPeg pricing only).
  */
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { FiberAdapter } from "./adapters/fiber.js";
 import { LightningAdapter } from "./adapters/lightning.js";
 import { WsJsonRpc, HttpJsonRpc, LndRestHttp } from "./adapters/transport.js";
 import type { Script } from "./adapters/types.js";
 import { startApiServer } from "./api/server.js";
 import { SwapCoordinator } from "./api/coordinator.js";
+import { StreamHub } from "./api/stream.js";
 import { OrderEngine } from "./orders/engine.js";
 import { fiberPorts, lightningPorts } from "./orders/ports.js";
 import { FileOrderStore } from "./orders/store.js";
@@ -34,7 +37,15 @@ const LND_HUB_REST = env("LND_HUB_REST", "http://127.0.0.1:8080");
 const MIN_SAFETY_DELTA_MS = Number(env("MIN_SAFETY_DELTA_MS", String(2 * HOUR)));
 const MAX_INCOMING_HOLD_MS = Number(env("MAX_INCOMING_HOLD_MS", String(21 * HOUR))); // covers the 16-21h FNN hold window used across this repo
 const API_PORT = Number(env("API_PORT", "8391"));
-const API_HOST = env("API_HOST", "127.0.0.1");
+// 0.0.0.0 by default: this listens INSIDE the compose network namespace, and
+// the actual "never expose beyond localhost" guarantee (CLAUDE.md) is
+// enforced one layer out, by deploy/docker-compose.dev.yml's host port
+// publish (`127.0.0.1:8391:8391` on netbase). Docker's port forwarding
+// targets the container's own network interface, not its loopback, so
+// binding this to 127.0.0.1 would make the published port unreachable —
+// override API_HOST=127.0.0.1 explicitly if running bifrostd directly on
+// the host (outside Docker) instead.
+const API_HOST = env("API_HOST", "0.0.0.0");
 const WBTC_SCRIPT: Script = {
   code_hash: env("UDT_CODE_HASH"),
   hash_type: "data2",
@@ -63,7 +74,9 @@ async function main(): Promise<void> {
   const fnnHubHttp = new FiberAdapter({ transport: new HttpJsonRpc({ url: FNN_HUB_URL }), currency: "Fibd" });
   const lndHub = new LightningAdapter({ transport: new LndRestHttp({ baseUrl: LND_HUB_REST, allowSelfSigned: LND_HUB_REST.startsWith("https") }) });
 
-  const store = new FileOrderStore(env("ORDER_STORE_PATH", "/tmp/bifrostd/orders.jsonl"));
+  const storePath = env("ORDER_STORE_PATH", "/tmp/bifrostd/orders.jsonl");
+  mkdirSync(dirname(storePath), { recursive: true });
+  const store = new FileOrderStore(storePath);
   const engine = new OrderEngine({
     store,
     ports: {
@@ -91,13 +104,14 @@ async function main(): Promise<void> {
   await engine.start();
   log(`engine started, ${store.list().length} orders recovered`);
 
+  const stream = new StreamHub();
   const coordinator = new SwapCoordinator({
     engine,
     store,
     fnnHubWs,
     fnnHubHttp,
     lndHub,
-    onOrderChanged: () => undefined, // api/server.ts wires its own broadcast via the same store/coordinator instance
+    onOrderChanged: (order) => stream.onOrderChanged(order),
     log,
   });
   const rootAc = new AbortController();
@@ -118,6 +132,7 @@ async function main(): Promise<void> {
     quoteService,
     fnnHub: fnnHubHttp,
     lndHub,
+    stream,
     minSafetyDeltaMs: MIN_SAFETY_DELTA_MS,
     maxIncomingHoldMs: MAX_INCOMING_HOLD_MS,
     log,

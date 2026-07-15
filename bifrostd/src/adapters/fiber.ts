@@ -258,8 +258,16 @@ export class FiberAdapter {
     }));
   }
 
+  /**
+   * FIX (found live 2026-07-15, wiring api/health against a real node): the
+   * node's public key field is `pubkey`, not `node_id` — the previous
+   * mapping and its unit test fixture both encoded the wrong field name and
+   * silently agreed with each other. Verified against the live rc7 node's
+   * actual node_info response (docs/RPC-NOTES.md has no entry for this RPC
+   * yet; it's a small enough, obviously-correct fix not to need one).
+   */
   async nodeInfo(): Promise<FiberNodeInfo> {
-    const res = await this.transport.call<{ node_id: string; version: string }>("node_info", {});
-    return { nodeId: res.node_id, version: res.version };
+    const res = await this.transport.call<{ pubkey: string; version: string }>("node_info", {});
+    return { nodeId: res.pubkey, version: res.version };
   }
 }

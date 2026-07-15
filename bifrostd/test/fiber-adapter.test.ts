@@ -178,10 +178,10 @@ describe("FiberAdapter inventory", () => {
     expect(ch!.udtTypeScript?.hash_type).toBe("data2");
   });
 
-  it("nodeInfo maps node_id/version", async () => {
+  it("nodeInfo maps pubkey/version (FNN's node_info field is pubkey, not node_id)", async () => {
     const { adapter: a } = adapter({ node_info: FX.node_info });
     expect(await a.nodeInfo()).toEqual({
-      nodeId: FX.node_info.node_id,
+      nodeId: FX.node_info.pubkey,
       version: "0.9.0-rc7",
     });
   });

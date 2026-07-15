@@ -24,6 +24,11 @@ export class StreamHub {
     this.sockets.delete(ws);
   }
 
+  closeAll(): void {
+    for (const ws of this.sockets) ws.terminate();
+    this.sockets.clear();
+  }
+
   broadcast(msg: StreamMessage): void {
     const body = JSON.stringify(msg);
     for (const ws of this.sockets) if (ws.readyState === WebSocket.OPEN) ws.send(body);

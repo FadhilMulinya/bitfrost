@@ -74,7 +74,7 @@
       }
     ]
   },
-  "node_info": { "node_id": "03032b99943822e721a651c5a5b9621043017daa9dc3ec81d83215fd2e25121187", "version": "0.9.0-rc7" },
+  "node_info": { "pubkey": "03032b99943822e721a651c5a5b9621043017daa9dc3ec81d83215fd2e25121187", "version": "0.9.0-rc7" },
   "store_change_put_invoice_status_received": {
     "PutCkbInvoiceStatus": {
       "payment_hash": "0x2fd54b1b6d4e4c53c439f37e39a1e9a780545d0d92ff5f00bd1e778a56ab5f1d",

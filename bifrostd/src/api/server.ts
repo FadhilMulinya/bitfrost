@@ -190,7 +190,7 @@ export function startApiServer(opts: ApiServerOptions) {
         outgoing: plan.outgoing,
       });
       opts.coordinator.watchOrder(order);
-      onOrderChanged(order);
+      opts.stream.onOrderChanged(order);
       return json(res, 200, order);
     } catch (e) {
       const be = e instanceof BifrostError ? e : new BifrostError("INTERNAL", String(e), false);
@@ -241,7 +241,7 @@ export function startApiServer(opts: ApiServerOptions) {
           // they observe an event (e.g. the INCOMING_CANCELLED this triggers)
           // via SwapCoordinator's own TERMINAL check — no separate call needed.
           const order = await opts.engine.cancelOrder(cancelMatch[1]!);
-          onOrderChanged(order);
+          opts.stream.onOrderChanged(order);
           return json(res, 200, order);
         } catch (e) {
           const be = e instanceof BifrostError ? e : new BifrostError("INTERNAL", String(e), false);
@@ -272,7 +272,7 @@ export function startApiServer(opts: ApiServerOptions) {
           lnd: { connected: lndInfo !== undefined, nodeId: lndInfo?.nodeId ?? "", version: lndInfo?.version ?? "" },
           // no external price feed wired (staticPeg strategy, v0.1) — documented, not invented
           feed: { fresh: true, ageMs: 0 },
-          expiryGuard: { minSafetyDeltaMs: opts.minSafetyDeltaMs, maxIncomingHoldMs: opts.maxIncomingHoldMs, rejections: [...rejections] },
+          expiryGuard: { minSafetyDeltaMs: opts.minSafetyDeltaMs, maxIncomingHoldMs: opts.maxIncomingHoldMs, rejections: [...opts.stream.rejections] },
         };
         return json(res, 200, health);
       }
@@ -291,9 +291,9 @@ export function startApiServer(opts: ApiServerOptions) {
 
   const wss = new WebSocketServer({ server, path: ENDPOINTS.stream });
   wss.on("connection", (ws) => {
-    sockets.add(ws);
+    opts.stream.add(ws);
     for (const order of opts.store.list()) ws.send(JSON.stringify({ type: "order", data: order } satisfies StreamMessage));
-    ws.on("close", () => sockets.delete(ws));
+    ws.on("close", () => opts.stream.remove(ws));
   });
 
   // periodic sweep so quote_expired pushes fire promptly, not only when a
@@ -307,7 +307,7 @@ export function startApiServer(opts: ApiServerOptions) {
     quoteCache,
     async close() {
       clearInterval(sweepTimer);
-      for (const ws of sockets) ws.terminate();
+      opts.stream.closeAll();
       wss.close();
       await new Promise<void>((r) => server.close(() => r()));
     },
