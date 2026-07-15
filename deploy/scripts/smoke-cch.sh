@@ -9,6 +9,16 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 need_jq() { compose exec -T ckb jq "$@"; }
 jqr() { local json=$1 f=$2; printf '%s' "$json" | compose exec -T ckb jq -r "$f"; }
 
+for a in "$@"; do
+  if [ "$a" = "--fresh" ]; then
+    echo "[smoke] --fresh: tearing down and reprovisioning the stack for a clean baseline"
+    compose down -v
+    git -C "$REPO_DIR" clean -fdx deploy/vendor
+    compose up -d --build --wait
+    "$SCRIPT_DIR/fund-regtest.sh"
+  fi
+done
+
 echo "[smoke] 0/7 verifying hold-invoice support (invoicesrpc) on lnd-hub"
 if ! lncli_hub addholdinvoice --help >/dev/null 2>&1; then
   echo "FATAL: lnd-hub lacks invoicesrpc (hold invoices) — CCH cannot operate" >&2
@@ -28,31 +38,20 @@ if [ "$(jqr "$ORDER" '.error')" != "null" ]; then
 fi
 FIBER_PAY_REQ=$(jqr "$ORDER" '.result.incoming_invoice.Fiber')
 AMT_HEX=$(jqr "$ORDER" '.result.amount_sats')
-echo "        order amount_sats: $(codec decode-u128 "$AMT_HEX") sat ($AMT_HEX)"
+AMT=$(codec decode-u128 "$AMT_HEX")
+echo "        order amount_sats: $AMT sat ($AMT_HEX)"
+# send_btc already created the hub's fiber hold invoice keyed to PAYMENT_HASH.
+# Record it now so an aborted run doesn't leave it HELD forever, locking
+# capacity for the next run's preflight.
+record_fiber_hash "$PAYMENT_HASH"
 
 echo "[smoke] 3/7 fiber: client connects to hub"
 rpc "$FNN_CLIENT_PORT" connect_peer "[{\"address\":\"$NODE3_ADDR\"}]" >/dev/null
 sleep 2
 
-chan_ready() {
-  rpc "$CKB_PORT" generate_epochs '["0x1"]' >/dev/null
-  local ch
-  ch=$(rpc "$FNN_CLIENT_PORT" list_channels "[{\"peer_id\":null}]")
-  printf '%s' "$ch" | compose exec -T ckb jq -e \
-    '.result.channels[]? | select(.state.state_name == "ChannelReady")' >/dev/null 2>&1
-}
-
-echo "[smoke] 4/7 fiber: client opens 200,000-unit wBTC channel to hub"
-if chan_ready; then
-  echo "        reusing existing ready channel"
-else
-  FUNDING_HEX=$(codec encode-u128 200000)
-  OPEN=$(rpc "$FNN_CLIENT_PORT" open_channel "[{\"pubkey\":\"$NODE3_PUBKEY\",\"funding_amount\":\"$FUNDING_HEX\",\"funding_udt_type_script\":{\"code_hash\":\"$UDT_CODE_HASH\",\"hash_type\":\"data2\",\"args\":\"$WBTC_ARGS\"}}]")
-  if [ "$(jqr "$OPEN" '.error')" != "null" ]; then
-    echo "open_channel failed: $OPEN" >&2; exit 1
-  fi
-fi
-retry 40 3 "fiber channel CHANNEL_READY" chan_ready
+echo "[smoke] 4/7 fiber: ensuring client->hub wBTC channel has spendable capacity"
+REQUIRED=$((AMT + (AMT + 9) / 10))   # +10% fee headroom, integer ceiling
+ensure_fiber_capacity "$FNN_CLIENT_PORT" "$NODE3_PUBKEY" "$REQUIRED"
 
 echo "[smoke] 5/7 fiber: client pays the hub's wrapped-BTC invoice"
 PAY=$(rpc "$FNN_CLIENT_PORT" send_payment "[{\"invoice\":\"$FIBER_PAY_REQ\"}]")
@@ -73,6 +72,7 @@ for i in $(seq 1 60); do
   sleep 3
 done
 [ -n "$final" ] || { echo "order never reached Success" >&2; exit 1; }
+clear_fiber_hash "$PAYMENT_HASH"   # settled by CCH itself — nothing left to clean up
 
 echo "[smoke] 7/7 verifying payee actually received the BTC"
 lncli_payee lookupinvoice "$(printf '%s' "$PAYMENT_HASH" | sed 's/^0x//')" | grep -q '"state": "SETTLED"' \
