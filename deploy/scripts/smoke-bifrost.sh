@@ -35,10 +35,7 @@ done
 
 if [ "$FRESH" = 1 ]; then
   echo "[smoke-bifrost] --fresh: tearing down and reprovisioning the stack for a clean baseline"
-  compose down -v
-  git -C "$REPO_DIR" clean -fdx deploy/vendor
-  compose up -d --build --wait
-  "$SCRIPT_DIR/fund-regtest.sh"
+  fresh_reprovision
 fi
 
 AMT1="${BIFROST_SMOKE_AMT1:-50000}"   # sats, FIBER_TO_LN
@@ -58,19 +55,8 @@ lncli_hub listchannels | compose exec -T ckb jq -e '.channels | length > 0' >/de
 HUB_KEY=$(lncli_hub getinfo | compose exec -T ckb jq -r .identity_pubkey)
 PAYEE_KEY=$(lncli_payee getinfo | compose exec -T ckb jq -r .identity_pubkey)
 
-echo "[smoke-bifrost] 2/6 ensuring Fiber wBTC channel client<->hub has spendable capacity"
 rpc "$FNN_CLIENT_PORT" connect_peer "[{\"address\":\"$NODE3_ADDR\"}]" >/dev/null || true
 sleep 2
-echo "        client->hub leg (funds swap #1, FIBER_TO_LN pay of $AMT1)"
-ensure_fiber_capacity "$FNN_CLIENT_PORT" "$NODE3_PUBKEY" "$(headroom "$AMT1")"
-echo "        hub->client leg (funds swap #2, LN_TO_FIBER pay of $AMT2)"
-ensure_fiber_capacity "$FNN_HUB_PORT" "$NODE1_PUBKEY" "$(headroom "$AMT2")"
-
-echo "[smoke-bifrost] 3/6 ensuring LN channel hub<->payee has spendable capacity"
-echo "        hub->payee leg (funds swap #1, FIBER_TO_LN pay of $AMT1)"
-ensure_ln_capacity lncli_hub "$PAYEE_KEY" "${PAYEE_KEY}@127.0.0.1:9835" "$(headroom "$AMT1")"
-echo "        payee->hub leg (funds swap #2, LN_TO_FIBER pay of $AMT2)"
-ensure_ln_capacity lncli_payee "$HUB_KEY" "${HUB_KEY}@127.0.0.1:9735" "$(headroom "$AMT2")"
 
 run_swap() { # run_swap <direction> <amt>
   compose exec -T \
@@ -79,8 +65,27 @@ run_swap() { # run_swap <direction> <amt>
     bifrostd node /repo/bifrostd/dist/smoke/runner.js "$1" --amt "$2"
 }
 
-echo "[smoke-bifrost] 4/6 swap #1: FIBER_TO_LN ($AMT1 sat) through the OrderEngine"
+# Each leg's preflight runs immediately before the swap that spends it — NOT
+# both upfront. Direction 1 (FIBER_TO_LN) is what GIVES lnd-payee LN outbound
+# capacity and the hub Fiber-channel balance that direction 2 (LN_TO_FIBER)
+# then spends (see header comment). Checking swap #2's requirement before
+# swap #1 has run defeats that ordering: on a truly fresh stack lnd-payee has
+# zero outbound and no on-chain wallet balance to open a channel with, so the
+# preflight would FATAL on a channel that direction 1 was about to fund.
+echo "[smoke-bifrost] 2/6 ensuring capacity for swap #1 (FIBER_TO_LN, $AMT1 sat)"
+echo "        client->hub fiber leg"
+ensure_fiber_capacity "$FNN_CLIENT_PORT" "$NODE3_PUBKEY" "$(headroom "$AMT1")"
+echo "        hub->payee LN leg"
+ensure_ln_capacity lncli_hub "$PAYEE_KEY" "${PAYEE_KEY}@127.0.0.1:9835" "$(headroom "$AMT1")"
+
+echo "[smoke-bifrost] 3/6 swap #1: FIBER_TO_LN ($AMT1 sat) through the OrderEngine"
 run_swap fiber_to_ln "$AMT1"
+
+echo "[smoke-bifrost] 4/6 ensuring capacity for swap #2 (LN_TO_FIBER, $AMT2 sat)"
+echo "        hub->client fiber leg"
+ensure_fiber_capacity "$FNN_HUB_PORT" "$NODE1_PUBKEY" "$(headroom "$AMT2")"
+echo "        payee->hub LN leg"
+ensure_ln_capacity lncli_payee "$HUB_KEY" "${HUB_KEY}@127.0.0.1:9735" "$(headroom "$AMT2")"
 
 echo "[smoke-bifrost] 5/6 swap #2: LN_TO_FIBER ($AMT2 sat) through the OrderEngine"
 run_swap ln_to_fiber "$AMT2"

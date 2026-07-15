@@ -49,7 +49,18 @@ fiber v0.9.0-rc7 · ckb v0.202.0 · ckb-cli v1.15.0 · lnd v0.19.2-beta · bitco
 
 ## Reset
 
+`deploy/vendor` is a BIND mount, not a named volume, and the containers write
+chain/node state into it AS ROOT — so `docker compose down -v` alone doesn't
+clean it, and a plain host-side `git clean -fdx deploy/vendor` fails with
+"Permission denied" on the root-owned files (and, if you push through the
+warnings, deletes `tests/nodes/deployer/dev.toml` and `.../deployer/config.yml`,
+static upstream fixtures that nothing regenerates — recoverable only from the
+pinned upstream tag). Use the shared helper instead, which cleans the bind
+mount from inside a throwaway root container and leaves those fixtures alone:
+
 ```bash
-docker compose -f deploy/docker-compose.dev.yml down -v
-git clean -fdx deploy/vendor   # removes generated chain/node state
+source deploy/scripts/lib.sh && fresh_reprovision
 ```
+
+`deploy/scripts/smoke-cch.sh --fresh` and `deploy/scripts/smoke-bifrost.sh --fresh`
+call this for you.

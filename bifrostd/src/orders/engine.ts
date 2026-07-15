@@ -156,6 +156,28 @@ export class OrderEngine {
     }, "incoming hold invoice issued");
   }
 
+  /**
+   * Operator/client-initiated cancel (§4.5 POST /v1/orders/:id/cancel).
+   * Only PENDING/INCOMING_HELD may be cancelled — once the outgoing leg is
+   * dispatched the hub is exposed and must run the swap to a definitive
+   * outcome (R1..R5), never abandon it. Anything else throws INTERNAL,
+   * mapped by the api layer to HTTP 409.
+   */
+  async cancelOrder(orderId: string): Promise<Order> {
+    const order = this.store.get(orderId);
+    if (!order) throw new BifrostError("INTERNAL", `unknown order ${orderId}`, false);
+    if (order.state !== "PENDING" && order.state !== "INCOMING_HELD") {
+      throw new BifrostError("INTERNAL", `cannot cancel order in state ${order.state}`, false);
+    }
+    // PROTOCOL §7's closed registry has no dedicated "cancelled by request"
+    // code (spec gap — see docs/STATUS.md); INTERNAL is the documented
+    // fallback for uncategorized outcomes, so it carries this one with an
+    // explicit hint rather than silently inventing a new wire code.
+    return this.enqueue(orderId, async () => {
+      await this.fail(orderId, failure("INTERNAL", "cancelled by operator/client request", false, "not a hub error — the client or operator requested cancellation"), true);
+    }).then(() => this.store.get(orderId)!);
+  }
+
   /** Feed one normalized adapter event; per-order serialized. */
   async onLegEvent(event: SwapLegEvent): Promise<void> {
     const order = this.store.getByHash(event.paymentHash);

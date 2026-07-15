@@ -18,6 +18,65 @@ compose() {
   docker compose -f "$DEPLOY_DIR/docker-compose.dev.yml" --env-file "$DEPLOY_DIR/.env" "$@"
 }
 
+# fresh_reprovision — docker compose down -v + regenerate a guaranteed-clean
+# baseline. `deploy/vendor` is a BIND mount (not a named volume — see the
+# `ckb` service's `volumes:` in docker-compose.dev.yml), and the containers
+# write chain/node state into it AS ROOT, so a plain host-side
+# `git clean -fdx deploy/vendor` (as documented in deploy/README.md's Reset
+# section) fails with "Permission denied" on those files and `set -e` kills
+# the script before it ever reaches `compose up`. Clean the bind mount from
+# INSIDE a throwaway root container instead, then let git clean sweep
+# whatever host-owned leftovers remain (best-effort — nothing left to fail on).
+fresh_reprovision() {
+  echo "        tearing down containers + named volumes"
+  compose down -v
+  echo "        clearing generated runtime state under deploy/vendor (root-owned files included)"
+  docker run --rm -v "$DEPLOY_DIR/vendor:/vendor" alpine:3.20 sh -c '
+    set -e
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/deploy/node-data
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/deploy/lnd-init/bitcoind
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/deploy/lnd-init/lnd-*/data
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/deploy/lnd-init/lnd-*/logs
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/deploy/lnd-init/lnd-*/letsencrypt
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/deploy/lnd-init/lnd-*/tls.*
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/deploy/udt-init/target
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/nodes/1/fiber/store
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/nodes/2/fiber/store
+    rm -rf /vendor/fiber-0.9.0-rc7/tests/nodes/3/fiber/store
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/nodes/.ports
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/nodes/1/config.yml
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/nodes/2/config.yml
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/nodes/3/config.yml
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/nodes/1/dev.toml
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/nodes/2/dev.toml
+    rm -f  /vendor/fiber-0.9.0-rc7/tests/nodes/3/dev.toml
+    # NEVER touch tests/nodes/deployer/{dev.toml,config.yml} -- both are
+    # static upstream fixtures (tag v0.9.0-rc7), not generated output.
+    # udt-init only READS them (config.yml is explicitly documented upstream
+    # as "we do not use this to start nodes... udt-init uses it as a
+    # template"; dev.toml gets copied into node-data/specs and every other
+    # node dev.toml) -- nothing ever recreates either one. Both are
+    # gitignored by the same tests/nodes/star/{dev.toml,config.yml} globs
+    # that also match the genuinely-generated per-node copies, which is what
+    # made these files collateral damage the first time this function was
+    # written -- do not repeat that mistake.
+    rm -f  /vendor/fiber-0.9.0-rc7/.chain-ready
+  '
+  echo "        sweeping any remaining host-owned untracked files"
+  # -e excludes the deployer/{dev.toml,config.yml} static fixtures: both are
+  # untracked (so gitignored) AND match the tests/nodes/star/{dev.toml,
+  # config.yml} globs that also match the genuinely-generated per-node
+  # copies, so a bare git clean here deletes them right back out from under
+  # the exclusion above.
+  git -C "$REPO_DIR" clean -fdx \
+    -e deploy/vendor/fiber-0.9.0-rc7/tests/nodes/deployer/dev.toml \
+    -e deploy/vendor/fiber-0.9.0-rc7/tests/nodes/deployer/config.yml \
+    deploy/vendor || true
+  echo "        bringing the stack back up"
+  compose up -d --build --wait
+  "$SCRIPT_DIR/fund-regtest.sh"
+}
+
 btc() {
   compose exec -T bitcoind bitcoin-cli -regtest \
     -rpcuser="$BITCOIN_RPC_USER" -rpcpassword="$BITCOIN_RPC_PASS" "$@"

@@ -34,6 +34,8 @@ export interface OrderStore {
   get(orderId: string): Order | undefined;
   getByHash(paymentHash: Hash256): Order | undefined;
   listNonTerminal(): Order[];
+  /** All orders (terminal + non-terminal), newest first. api/ pagination slices this. */
+  list(): Order[];
   events(orderId: string): OrderEvent[];
   close(): void;
 }
@@ -92,6 +94,10 @@ abstract class BaseStore implements OrderStore {
 
   listNonTerminal(): Order[] {
     return [...this.orders.values()].filter((o) => !TERMINAL.has(o.state)).map((o) => structuredClone(o));
+  }
+
+  list(): Order[] {
+    return [...this.orders.values()].sort((a, b) => b.createdAt - a.createdAt).map((o) => structuredClone(o));
   }
 
   events(orderId: string): OrderEvent[] {

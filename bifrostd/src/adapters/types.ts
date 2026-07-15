@@ -79,6 +79,10 @@ export interface FiberChannel {
   state: string;
   localBalance: bigint;
   remoteBalance: bigint;
+  /** currently-locked outbound TLCs (docs/RPC-NOTES.md) — spendable outbound = localBalance - offeredTlcBalance */
+  offeredTlcBalance: bigint;
+  /** currently-locked inbound TLCs — spendable inbound = remoteBalance - receivedTlcBalance */
+  receivedTlcBalance: bigint;
   udtTypeScript?: Script;
 }
 
@@ -119,6 +123,15 @@ export interface LnChannel {
   active: boolean;
   localBalanceSat: bigint;
   remoteBalanceSat: bigint;
+  /** spendable outbound = localBalanceSat - localChanReserveSat - unsettledBalanceSat */
+  localChanReserveSat: bigint;
+  unsettledBalanceSat: bigint;
+}
+
+export interface LnNodeInfo {
+  nodeId: string;
+  version: string;
+  syncedToChain: boolean;
 }
 
 export interface PaymentUpdate {

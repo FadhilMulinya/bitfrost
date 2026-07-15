@@ -12,10 +12,7 @@ jqr() { local json=$1 f=$2; printf '%s' "$json" | compose exec -T ckb jq -r "$f"
 for a in "$@"; do
   if [ "$a" = "--fresh" ]; then
     echo "[smoke] --fresh: tearing down and reprovisioning the stack for a clean baseline"
-    compose down -v
-    git -C "$REPO_DIR" clean -fdx deploy/vendor
-    compose up -d --build --wait
-    "$SCRIPT_DIR/fund-regtest.sh"
+    fresh_reprovision
   fi
 done
 

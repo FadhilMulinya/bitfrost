@@ -252,6 +252,8 @@ export class FiberAdapter {
       state: String((c["state"] as { state_name?: string } | undefined)?.state_name ?? c["state"]),
       localBalance: decodeU128Hex(String(c["local_balance"])),
       remoteBalance: decodeU128Hex(String(c["remote_balance"])),
+      offeredTlcBalance: decodeU128Hex(String(c["offered_tlc_balance"] ?? "0x0")),
+      receivedTlcBalance: decodeU128Hex(String(c["received_tlc_balance"] ?? "0x0")),
       ...(c["funding_udt_type_script"] ? { udtTypeScript: c["funding_udt_type_script"] as Script } : {}),
     }));
   }
