@@ -78,7 +78,9 @@ function pump(events: AsyncIterable<Parameters<OrderEngine["onLegEvent"]>[0]>, e
       for await (const ev of events) {
         if (ac.signal.aborted) return;
         log(`event[${label}]: ${ev.kind}${ev.preimage ? " (+preimage)" : ""}`);
-        await engine.onLegEvent(ev);
+        // a handler error (e.g. dead outgoing node during dispatch) must not
+        // kill the pump — later events still need to reach the engine
+        await engine.onLegEvent(ev).catch((e) => log(`event[${label}] handler error: ${String(e)}`));
       }
     } catch (e) {
       if (!ac.signal.aborted) log(`event pump ${label} ended: ${String(e)}`);
