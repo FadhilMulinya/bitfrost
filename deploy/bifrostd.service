@@ -1,0 +1,52 @@
+[Unit]
+Description=Bifrost hub daemon (bifrostd) — OrderEngine + Fiber/Lightning adapters + api/ gateway
+Documentation=https://github.com/FadhilMulinya/bitfrost
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+
+WorkingDirectory=/home/ubuntu/bifrost/bifrostd
+
+# KEY=VALUE lines, no `export`, `#` comments allowed — same format as
+# deploy/.env.example. bifrostd/src/index.ts requires UDT_CODE_HASH and
+# WBTC_ARGS with no default (throws on start if either is missing); set both
+# here for whatever network this host actually points at. If FNN/LND aren't
+# reachable at bifrostd's built-in localhost defaults (FNN_HUB_URL,
+# FNN_HUB_WS, LND_HUB_REST), override those here too — see bifrostd/src/index.ts
+# for the full list of recognized vars and their defaults.
+EnvironmentFile=/home/ubuntu/bifrost/deploy/.env
+
+# /usr/bin/node assumes a system-wide Node install (apt/nodesource). If Node
+# is managed via nvm on this host, replace with the absolute path from
+# `command -v node` for the `ubuntu` user (nvm shims aren't on a systemd
+# service's PATH) — e.g. /home/ubuntu/.nvm/versions/node/vXX.X.X/bin/node.
+ExecStart=/usr/bin/node /home/ubuntu/bifrost/bifrostd/dist/index.js
+
+Restart=on-failure
+RestartSec=5
+
+# journald is the default sink for stdout/stderr; set explicitly so it's
+# never silently redirected by a systemd version/distro default change.
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bifrostd
+
+# Baseline hardening — least privilege for a network daemon holding
+# in-flight funds. bifrostd only reads its own checkout (ProtectHome=
+# read-only is enough, no exception needed) and writes its order log under
+# /tmp/bifrostd (ORDER_STORE_PATH default) — PrivateTmp already makes that
+# writable in the service's own private /tmp. If you override
+# ORDER_STORE_PATH to somewhere outside /tmp, add that path to
+# ReadWritePaths= below or the write will be silently denied.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+# ReadWritePaths=/path/to/custom/ORDER_STORE_PATH/dir
+
+[Install]
+WantedBy=multi-user.target

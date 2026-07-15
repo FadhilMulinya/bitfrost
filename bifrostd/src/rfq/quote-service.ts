@@ -3,7 +3,7 @@
  *
  * Signing: BIP-340 Schnorr over the SDK's signingDigest (RFC 8785 canonical
  * JSON + "bifrost/0.1|quote|" domain prefix). Canonicalization is IMPORTED
- * from @bifrost/sdk and never reimplemented — one implementation, one truth.
+ * from bifrost-sdk and never reimplemented — one implementation, one truth.
  *
  * Amount arithmetic (§4.2): amounts are fully fee-inclusive and final; the
  * rounding direction is always hub-favorable by AT MOST 1 unit, and the SDK's

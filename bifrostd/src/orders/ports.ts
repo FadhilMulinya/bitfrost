@@ -3,7 +3,7 @@
  * (SYSTEM-DESIGN §4.2), implemented over the real adapters (§4.1). Property
  * tests substitute fakes; the smoke runner binds Fiber/Lightning adapters.
  *
- * CLTV↔ms conversions live in @bifrost/sdk's expiry module (PROTOCOL §6) and
+ * CLTV↔ms conversions live in bifrost-sdk's expiry module (PROTOCOL §6) and
  * are applied here in the conservative direction only:
  *  - incoming LN hold window: blocks = ceil(ms / INCOMING_MS_PER_BLOCK), so
  *    the fast-block underestimate of the real hold still covers the claim;
