@@ -22,9 +22,9 @@
     "node": ">=20"
   },
   "dependencies": {
-    "bifrost-sdk": "file:../sdk",
     "@noble/curves": "^1.9.7",
     "@noble/hashes": "^1.8.0",
+    "bifrost-sdk": "file:../sdk",
     "ws": "^8.18.0"
   }
 }

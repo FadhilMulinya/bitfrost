@@ -75,7 +75,7 @@ export class Bifrost {
   ): Promise<Quote> {
     const res = await this.fetchImpl(`${hubApi}/quotes`, {
       method: "POST",
-      headers: this.headers(),
+      headers: this.headers(hubApi),
       body: JSON.stringify(request),
     });
     const quote = await this.json<Quote>(res);
@@ -110,7 +110,7 @@ export class Bifrost {
   async createOrder(hubApi: string, create: OrderCreate): Promise<Order> {
     const res = await this.fetchImpl(`${hubApi}/orders`, {
       method: "POST",
-      headers: this.headers(),
+      headers: this.headers(hubApi),
       body: JSON.stringify(create),
     });
     return this.json<Order>(res);
@@ -208,9 +208,12 @@ export class Bifrost {
 
   /* ---------- internals ---------- */
 
-  private headers(): Record<string, string> {
+  private headers(hubApi: string): Record<string, string> {
     const h: Record<string, string> = { "content-type": "application/json" };
     if (this.apiKey) h["authorization"] = `Bearer ${this.apiKey}`;
+    // ngrok free-tier tunnels show an HTML interstitial to browser-like
+    // requests unless this header is present; harmless to send elsewhere.
+    if (hubApi.includes("ngrok-free.app")) h["ngrok-skip-browser-warning"] = "true";
     return h;
   }
 
