@@ -1,0 +1,12 @@
+{
+  "name": "r2-violation-dispatch-before-held",
+  "description": "R2: dispatching outgoing before INCOMING_HELD is illegal",
+  "events": [
+    "outgoing_dispatched"
+  ],
+  "trajectory": [
+    "PENDING",
+    "OUTGOING_IN_FLIGHT"
+  ],
+  "expected": "invalid"
+}

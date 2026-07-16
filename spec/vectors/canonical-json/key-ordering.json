@@ -1,0 +1,21 @@
+{
+  "description": "canonicalize per RFC 8785, digest = sha256(\"bifrost/0.1|\" + typeTag + \"|\" + canonical)",
+  "typeTag": "quote",
+  "object": {
+    "b": {
+      "z": "last",
+      "a": "first"
+    },
+    "a": [
+      "x",
+      1,
+      true,
+      null
+    ],
+    "emptyObj": {},
+    "unicode": "héllo ✓"
+  },
+  "canonical": "{\"a\":[\"x\",1,true,null],\"b\":{\"a\":\"first\",\"z\":\"last\"},\"emptyObj\":{},\"unicode\":\"héllo ✓\"}",
+  "canonicalBytesHex": "7b2261223a5b2278222c312c747275652c6e756c6c5d2c2262223a7b2261223a226669727374222c227a223a226c617374227d2c22656d7074794f626a223a7b7d2c22756e69636f6465223a2268c3a96c6c6f20e29c93227d",
+  "digestHex": "c665e55ae6f153e30e8594d90c827f810607985b4cb73ded0fe9aa4a1fbc002b"
+}

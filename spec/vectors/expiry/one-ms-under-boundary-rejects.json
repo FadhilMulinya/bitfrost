@@ -1,0 +1,13 @@
+{
+  "name": "one-ms-under-boundary-rejects",
+  "description": "incoming one ms short of outgoing + delta: reject",
+  "now": 1752505200000,
+  "incoming": {
+    "tlcExpiryAt": 1752526799999
+  },
+  "outgoing": {
+    "tlcExpiryAt": 1752519600000
+  },
+  "minSafetyDeltaMs": 7200000,
+  "expected": "reject"
+}

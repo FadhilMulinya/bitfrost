@@ -1,0 +1,13 @@
+{
+  "name": "fiber-in-ln-out-reject-tight",
+  "description": "outgoing 80 blocks * 600000 = 48e6 ms; incoming 12h cannot cover 48e6 + 7.2e6",
+  "now": 1752505200000,
+  "incoming": {
+    "tlcExpiryAt": 1752548400000
+  },
+  "outgoing": {
+    "blocksFromNow": 80
+  },
+  "minSafetyDeltaMs": 7200000,
+  "expected": "reject"
+}

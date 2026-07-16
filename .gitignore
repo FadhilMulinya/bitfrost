@@ -3,7 +3,5 @@ dist/
 *.log
 .env
 **/CLAUDE.md
-**/spec/
-docs/
 .claude
 .gstack/

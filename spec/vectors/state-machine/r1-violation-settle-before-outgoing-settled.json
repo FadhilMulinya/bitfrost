@@ -1,0 +1,14 @@
+{
+  "name": "r1-violation-settle-before-outgoing-settled",
+  "description": "R1: settling incoming before OUTGOING_SETTLED is illegal",
+  "events": [
+    "incoming_held",
+    "incoming_settled"
+  ],
+  "trajectory": [
+    "PENDING",
+    "INCOMING_HELD",
+    "SUCCEEDED"
+  ],
+  "expected": "invalid"
+}

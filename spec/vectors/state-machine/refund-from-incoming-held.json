@@ -1,0 +1,15 @@
+{
+  "name": "refund-from-incoming-held",
+  "description": "R3: safety delta breached while held -> REFUNDING -> FAILED",
+  "events": [
+    "safety_delta_breached",
+    "incoming_cancelled"
+  ],
+  "trajectory": [
+    "PENDING",
+    "INCOMING_HELD",
+    "REFUNDING",
+    "FAILED"
+  ],
+  "expected": "valid"
+}
