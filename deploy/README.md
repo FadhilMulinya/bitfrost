@@ -7,10 +7,30 @@ measured against — no Bifrost features live here.
 ## Quick start
 
 ```bash
+export DOCKER_BUILDKIT=1                    # required for the ckb image's cargo cache mounts
 cp deploy/.env.example deploy/.env          # dev creds, never committed
 docker compose -f deploy/docker-compose.dev.yml --env-file deploy/.env up -d --build
 deploy/scripts/fund-regtest.sh              # regtest coins + LN channel hub->payee
 deploy/scripts/smoke-cch.sh                 # stock CCH swap -> prints order at Success
+```
+
+The `ckb` image builds `udt-init` from the vendored fiber Rust source
+(`deploy/images/chain-init/Dockerfile`), which is a ~7min cold compile.
+With `DOCKER_BUILDKIT=1` set, the cargo registry and build cache persist
+across builds (`--mount=type=cache`), so rebuilds after the first one only
+recompile changed code — normally well under a minute.
+
+To skip the compile entirely on rebuilds/CI (once you already have a
+binary from a prior build):
+
+```bash
+# one-time, after any normal build: copy the compiled binary out
+docker cp bifrost-dev-ckb-1:/usr/local/bin/udt-init deploy/vendor/udt-init
+
+# on every subsequent build, point at it and select the prebuilt stage —
+# BuildKit then never enters the udt-builder (cargo) stage at all
+UDT_INIT_BIN=deploy/vendor/udt-init UDT_INIT_STAGE=udt-prebuilt \
+  docker compose -f deploy/docker-compose.dev.yml --env-file deploy/.env up -d --build
 ```
 
 ## Topology (mirrors upstream fiber e2e CI, one compose service per process)

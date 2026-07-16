@@ -37,6 +37,9 @@ services:
     build:
       context: .
       dockerfile: images/chain-init/Dockerfile
+      args:
+        UDT_INIT_BIN: ${UDT_INIT_BIN:-}
+        UDT_INIT_STAGE: ${UDT_INIT_STAGE:-udt-builder}
     network_mode: "service:netbase"
     <<: *vendor
     depends_on: [netbase]

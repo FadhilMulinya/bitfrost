@@ -12,6 +12,7 @@
  */
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { loadRequiredEnv } from "./config.js";
 import { FiberAdapter } from "./adapters/fiber.js";
 import { LightningAdapter } from "./adapters/lightning.js";
 import { WsJsonRpc, HttpJsonRpc, LndRestHttp } from "./adapters/transport.js";
@@ -31,6 +32,10 @@ const env = (k: string, dflt?: string): string => {
   return v;
 };
 
+// Fail fast on missing required vars, before anything else touches them —
+// one clear message listing everything missing, then a clean exit(1).
+const requiredEnv = loadRequiredEnv();
+
 const FNN_HUB_URL = env("FNN_HUB_URL", "http://127.0.0.1:21716");
 const FNN_HUB_WS = env("FNN_HUB_WS", "ws://127.0.0.1:21716");
 const LND_HUB_REST = env("LND_HUB_REST", "http://127.0.0.1:8080");
@@ -47,9 +52,9 @@ const API_PORT = Number(env("API_PORT", "8391"));
 // the host (outside Docker) instead.
 const API_HOST = env("API_HOST", "0.0.0.0");
 const WBTC_SCRIPT: Script = {
-  code_hash: env("UDT_CODE_HASH"),
+  code_hash: requiredEnv.UDT_CODE_HASH,
   hash_type: "data2",
-  args: env("WBTC_ARGS"),
+  args: requiredEnv.WBTC_ARGS,
 };
 
 // DEV-ONLY signing key (throwaway, same convention as the vendored fiber dev
