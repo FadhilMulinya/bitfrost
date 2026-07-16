@@ -9,6 +9,10 @@ vendor/fiber-0.9.0-rc7/tests/deploy/lnd-init/lnd-*/tls.*
 vendor/fiber-0.9.0-rc7/tests/nodes/.ports
 vendor/fiber-0.9.0-rc7/tests/nodes/*/config.yml
 vendor/fiber-0.9.0-rc7/tests/nodes/*/dev.toml
+# deployer/config.yml and deployer/dev.toml are hand-maintained templates
+# (not udt-init output) — keep them tracked despite the globs above.
+!vendor/fiber-0.9.0-rc7/tests/nodes/deployer/config.yml
+!vendor/fiber-0.9.0-rc7/tests/nodes/deployer/dev.toml
 vendor/fiber-0.9.0-rc7/tests/nodes/*/fiber/store/
 vendor/fiber-0.9.0-rc7/.chain-ready
 .smoke-state/
