@@ -186,6 +186,6 @@ function defaultQuoteId(): string {
     ts /= 32n;
     return c;
   }).reverse().join("");
-  const rand = Array.from(randomBytes(16).subarray(0, 16), (b) => B32[b % 32]).join("");
+  const rand = Array.from(randomBytes(16).subarray(0, 16), (b: number) => B32[b % 32]).join("");
   return time + rand;
 }
