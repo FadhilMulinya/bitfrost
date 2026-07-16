@@ -1,0 +1,13 @@
+{
+  "name": "fiber-in-ln-out-accept",
+  "description": "Fiber incoming (wall-clock), LN outgoing 6 blocks: 6*600000=3600000 out; 12h in >= 3.6e6 + 7.2e6",
+  "now": 1752505200000,
+  "incoming": {
+    "tlcExpiryAt": 1752548400000
+  },
+  "outgoing": {
+    "blocksFromNow": 6
+  },
+  "minSafetyDeltaMs": 7200000,
+  "expected": "accept"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "no-refund-after-outgoing-settled",
+  "description": "once outgoing settled, refunding would strand the hub; only SUCCEEDED is legal",
+  "events": [
+    "incoming_held",
+    "outgoing_dispatched",
+    "outgoing_settled",
+    "refund_attempt"
+  ],
+  "trajectory": [
+    "PENDING",
+    "INCOMING_HELD",
+    "OUTGOING_IN_FLIGHT",
+    "OUTGOING_SETTLED",
+    "REFUNDING"
+  ],
+  "expected": "invalid"
+}

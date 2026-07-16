@@ -1,0 +1,101 @@
+{
+  "description": "BIP-340 Schnorr over the domain-separated digest; auxRand = 32 zero bytes",
+  "privateKeyHex": "0000000000000000000000000000000000000000000000000000000000000003",
+  "publicKeyHex": "f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9",
+  "typeTag": "quote",
+  "object": {
+    "protocol": "bifrost/0.1",
+    "quoteId": "01JVECTORQUOTE0000000000",
+    "pair": {
+      "give": {
+        "network": "fiber",
+        "unit": "shannon"
+      },
+      "get": {
+        "network": "lightning",
+        "unit": "sat"
+      }
+    },
+    "rate": {
+      "num": "50000",
+      "den": "13000000000"
+    },
+    "giveAmount": "13000000000",
+    "getAmount": "49888",
+    "feeBreakdown": {
+      "hubFeePpm": "2000",
+      "flatFee": "0",
+      "estNetworkFee": "12"
+    },
+    "issuedAt": 1752505200000,
+    "expiresAt": 1752505230000,
+    "maxIncomingHoldMs": 21600000,
+    "minSafetyDeltaMs": 7200000,
+    "hubPubkey": "f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9"
+  },
+  "digestHex": "bd496c8695a399c0f5044c1ccb104c3ff67c18e31183db1cbe29561cba180405",
+  "signatureHex": "8e0d4e5f4d226cf2794e947c28fb4656aa5590a9271b1d3df41efe22c762cdf7bb0d7071809fc34dff3fd33f2108e1e26b80de35ba8db1d3207397a34ca35b55",
+  "signedObject": {
+    "protocol": "bifrost/0.1",
+    "quoteId": "01JVECTORQUOTE0000000000",
+    "pair": {
+      "give": {
+        "network": "fiber",
+        "unit": "shannon"
+      },
+      "get": {
+        "network": "lightning",
+        "unit": "sat"
+      }
+    },
+    "rate": {
+      "num": "50000",
+      "den": "13000000000"
+    },
+    "giveAmount": "13000000000",
+    "getAmount": "49888",
+    "feeBreakdown": {
+      "hubFeePpm": "2000",
+      "flatFee": "0",
+      "estNetworkFee": "12"
+    },
+    "issuedAt": 1752505200000,
+    "expiresAt": 1752505230000,
+    "maxIncomingHoldMs": 21600000,
+    "minSafetyDeltaMs": 7200000,
+    "hubPubkey": "f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9",
+    "signature": "8e0d4e5f4d226cf2794e947c28fb4656aa5590a9271b1d3df41efe22c762cdf7bb0d7071809fc34dff3fd33f2108e1e26b80de35ba8db1d3207397a34ca35b55"
+  },
+  "tamperedObject": {
+    "protocol": "bifrost/0.1",
+    "quoteId": "01JVECTORQUOTE0000000000",
+    "pair": {
+      "give": {
+        "network": "fiber",
+        "unit": "shannon"
+      },
+      "get": {
+        "network": "lightning",
+        "unit": "sat"
+      }
+    },
+    "rate": {
+      "num": "50000",
+      "den": "13000000000"
+    },
+    "giveAmount": "13000000000",
+    "getAmount": "49888",
+    "feeBreakdown": {
+      "hubFeePpm": "2000",
+      "flatFee": "0",
+      "estNetworkFee": "12"
+    },
+    "issuedAt": 1752505200001,
+    "expiresAt": 1752505230000,
+    "maxIncomingHoldMs": 21600000,
+    "minSafetyDeltaMs": 7200000,
+    "hubPubkey": "f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9",
+    "signature": "8e0d4e5f4d226cf2794e947c28fb4656aa5590a9271b1d3df41efe22c762cdf7bb0d7071809fc34dff3fd33f2108e1e26b80de35ba8db1d3207397a34ca35b55"
+  },
+  "tamperedMustVerify": false
+}

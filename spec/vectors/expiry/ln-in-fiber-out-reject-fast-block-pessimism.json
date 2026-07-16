@@ -1,0 +1,13 @@
+{
+  "name": "ln-in-fiber-out-reject-fast-block-pessimism",
+  "description": "40 incoming blocks look like 24e6 ms at 600000/block but MUST be bounded at 300000/block = 12e6 < 14.4e6 + 7.2e6",
+  "now": 1752505200000,
+  "incoming": {
+    "blocksFromNow": 40
+  },
+  "outgoing": {
+    "tlcExpiryAt": 1752519600000
+  },
+  "minSafetyDeltaMs": 7200000,
+  "expected": "reject"
+}

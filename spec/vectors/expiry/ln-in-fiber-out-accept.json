@@ -1,0 +1,13 @@
+{
+  "name": "ln-in-fiber-out-accept",
+  "description": "LN incoming 144 blocks with FAST-block pessimism (300000): 43.2e6; fiber outgoing 6h wall-clock",
+  "now": 1752505200000,
+  "incoming": {
+    "blocksFromNow": 144
+  },
+  "outgoing": {
+    "tlcExpiryAt": 1752526800000
+  },
+  "minSafetyDeltaMs": 7200000,
+  "expected": "accept"
+}

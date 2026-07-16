@@ -1,0 +1,12 @@
+{
+  "name": "expire-before-hold",
+  "description": "quote/hold expiry before any HTLC arrives",
+  "events": [
+    "expired"
+  ],
+  "trajectory": [
+    "PENDING",
+    "FAILED"
+  ],
+  "expected": "valid"
+}

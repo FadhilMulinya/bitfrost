@@ -1,0 +1,13 @@
+{
+  "name": "exact-boundary-accepts",
+  "description": "incoming == outgoing + delta exactly: invariant uses >=, so accept",
+  "now": 1752505200000,
+  "incoming": {
+    "tlcExpiryAt": 1752526800000
+  },
+  "outgoing": {
+    "tlcExpiryAt": 1752519600000
+  },
+  "minSafetyDeltaMs": 7200000,
+  "expected": "accept"
+}

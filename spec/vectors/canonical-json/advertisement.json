@@ -1,0 +1,32 @@
+{
+  "description": "canonicalize per RFC 8785, digest = sha256(\"bifrost/0.1|\" + typeTag + \"|\" + canonical)",
+  "typeTag": "ad",
+  "object": {
+    "protocol": "bifrost/0.1",
+    "hubPubkey": "f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9",
+    "endpoints": {
+      "api": "https://hub.example.com/v1"
+    },
+    "pairs": [
+      {
+        "give": {
+          "network": "fiber",
+          "unit": "shannon"
+        },
+        "get": {
+          "network": "lightning",
+          "unit": "sat"
+        },
+        "minAmount": "1000",
+        "maxAmount": "10000000"
+      }
+    ],
+    "fiberNodeId": "fiber-node-vector",
+    "lightningNodeId": "ln-node-vector",
+    "issuedAt": 1752505200000,
+    "ttlMs": 3600000
+  },
+  "canonical": "{\"endpoints\":{\"api\":\"https://hub.example.com/v1\"},\"fiberNodeId\":\"fiber-node-vector\",\"hubPubkey\":\"f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9\",\"issuedAt\":1752505200000,\"lightningNodeId\":\"ln-node-vector\",\"pairs\":[{\"get\":{\"network\":\"lightning\",\"unit\":\"sat\"},\"give\":{\"network\":\"fiber\",\"unit\":\"shannon\"},\"maxAmount\":\"10000000\",\"minAmount\":\"1000\"}],\"protocol\":\"bifrost/0.1\",\"ttlMs\":3600000}",
+  "canonicalBytesHex": "7b22656e64706f696e7473223a7b22617069223a2268747470733a2f2f6875622e6578616d706c652e636f6d2f7631227d2c2266696265724e6f64654964223a2266696265722d6e6f64652d766563746f72222c226875625075626b6579223a2266393330386130313932353863333130343933343466383566383964353232396235333163383435383336663939623038363031663131336263653033366639222c226973737565644174223a313735323530353230303030302c226c696768746e696e674e6f64654964223a226c6e2d6e6f64652d766563746f72222c227061697273223a5b7b22676574223a7b226e6574776f726b223a226c696768746e696e67222c22756e6974223a22736174227d2c2267697665223a7b226e6574776f726b223a226669626572222c22756e6974223a227368616e6e6f6e227d2c226d6178416d6f756e74223a223130303030303030222c226d696e416d6f756e74223a2231303030227d5d2c2270726f746f636f6c223a22626966726f73742f302e31222c2274746c4d73223a333630303030307d",
+  "digestHex": "81956309399b9c72f009d7bdb12e13eb64fd282f2f6be4484fe4a03077cec64e"
+}
