@@ -1,17 +1,20 @@
 {
   "name": "@bifrost/bifrostd",
   "version": "0.0.1",
-  "description": "Bifrost hub daemon (placeholder). Currently ships only the FNN JSON-RPC hex codec used by deploy/ scripts.",
+  "description": "Bifrost hub daemon. OrderEngine + Fiber/Lightning adapters + RFQ, fronted by the api/ HTTP+WS gateway (SYSTEM-DESIGN §4.5).",
   "type": "module",
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "npm run build && npm run start",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "@types/ws": "^8.5.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   },
@@ -19,8 +22,9 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@bifrost/sdk": "file:../sdk",
+    "bifrost-sdk": "file:../sdk",
     "@noble/curves": "^1.9.7",
-    "@noble/hashes": "^1.8.0"
+    "@noble/hashes": "^1.8.0",
+    "ws": "^8.18.0"
   }
 }

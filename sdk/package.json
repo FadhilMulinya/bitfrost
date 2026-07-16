@@ -1,5 +1,5 @@
 {
-  "name": "@bifrost/sdk",
+  "name": "bifrost-sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for the Bifrost RFQ protocol (bifrost/0.1) - pay any Lightning or Fiber invoice through Bifrost hubs",
   "type": "module",
@@ -18,9 +18,25 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FadhilMulinya/bitfrost.git",
+    "directory": "sdk"
+  },
+  "keywords": [
+    "bifrost",
+    "lightning",
+    "fiber",
+    "ckb",
+    "bolt11",
+    "htlc",
+    "atomic-swap",
+    "cross-chain"
+  ],
   "dependencies": {
     "@noble/curves": "^1.6.0",
     "@noble/hashes": "^1.5.0",

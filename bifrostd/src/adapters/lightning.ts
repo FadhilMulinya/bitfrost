@@ -21,6 +21,7 @@ import {
   type Hash256,
   type LnChannel,
   type LnInvoiceState,
+  type LnNodeInfo,
   type LnPaymentStatus,
   type PaymentHandle,
   type PaymentUpdate,
@@ -204,7 +205,15 @@ export class LightningAdapter {
       active: Boolean(c["active"]),
       localBalanceSat: BigInt(String(c["local_balance"] ?? "0")),
       remoteBalanceSat: BigInt(String(c["remote_balance"] ?? "0")),
+      localChanReserveSat: BigInt(String(c["local_chan_reserve_sat"] ?? "0")),
+      unsettledBalanceSat: BigInt(String(c["unsettled_balance"] ?? "0")),
     }));
+  }
+
+  /** lnrpc.GetInfo (REST GET /v1/getinfo). */
+  async getInfo(): Promise<LnNodeInfo> {
+    const res = await this.transport.get<{ identity_pubkey: string; version: string; synced_to_chain: boolean }>("/v1/getinfo");
+    return { nodeId: res.identity_pubkey, version: res.version, syncedToChain: res.synced_to_chain };
   }
 }
 

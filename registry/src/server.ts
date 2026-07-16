@@ -15,7 +15,7 @@ import {
   verifyAdSignature,
   type Advertisement,
   type AssetRef,
-} from "@bifrost/sdk";
+} from "bifrost-sdk";
 import type { AdStore } from "./db.js";
 
 export const MAX_AD_AGE_MS = 5 * 60_000; // §4.5: reject issuedAt older than 5 min

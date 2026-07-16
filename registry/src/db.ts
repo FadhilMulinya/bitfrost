@@ -4,7 +4,7 @@
  * modify ads (PROTOCOL §4.5); clients re-verify signatures locally.
  */
 import Database from "better-sqlite3";
-import type { Advertisement } from "@bifrost/sdk";
+import type { Advertisement } from "bifrost-sdk";
 
 export interface AdStore {
   upsert(ad: Advertisement): void;

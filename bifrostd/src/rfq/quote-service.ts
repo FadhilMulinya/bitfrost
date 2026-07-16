@@ -3,7 +3,7 @@
  *
  * Signing: BIP-340 Schnorr over the SDK's signingDigest (RFC 8785 canonical
  * JSON + "bifrost/0.1|quote|" domain prefix). Canonicalization is IMPORTED
- * from @bifrost/sdk and never reimplemented — one implementation, one truth.
+ * from bifrost-sdk and never reimplemented — one implementation, one truth.
  *
  * Amount arithmetic (§4.2): amounts are fully fee-inclusive and final; the
  * rounding direction is always hub-favorable by AT MOST 1 unit, and the SDK's
@@ -27,8 +27,8 @@ import {
   signingDigest,
   type Quote,
   type QuoteRequest,
-} from "@bifrost/sdk";
-import type { Pair } from "@bifrost/sdk";
+} from "bifrost-sdk";
+import type { Pair } from "bifrost-sdk";
 import { mulDivCeil, mulDivFloor, normalize, type Rational } from "./rational.js";
 import type { PricingContext, PricingStrategy } from "./pricing.js";
 
@@ -186,6 +186,6 @@ function defaultQuoteId(): string {
     ts /= 32n;
     return c;
   }).reverse().join("");
-  const rand = Array.from(randomBytes(16).subarray(0, 16), (b) => B32[b % 32]).join("");
+  const rand = Array.from(randomBytes(16).subarray(0, 16), (b: number) => B32[b % 32]).join("");
   return time + rand;
 }

@@ -1,4 +1,4 @@
-import type { Order, OrderState } from "@bifrost/sdk";
+import type { Order, OrderState } from "bifrost-sdk";
 import { fmtAmount } from "../api.ts";
 
 const STATE_CLASS: Record<OrderState, string> = {

@@ -19,7 +19,7 @@ import {
   INCOMING_MS_PER_BLOCK,
   OUTGOING_MS_PER_BLOCK,
   expiryInvariantHolds,
-} from "@bifrost/sdk";
+} from "bifrost-sdk";
 import { OrderEngine } from "../src/orders/engine.js";
 import { FileOrderStore, MemoryOrderStore } from "../src/orders/store.js";
 import type { HoldPort, NetworkPorts, PayPort, HoldInvoiceState, PaymentStateResult } from "../src/orders/ports.js";

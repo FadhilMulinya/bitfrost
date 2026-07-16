@@ -7,10 +7,30 @@ measured against — no Bifrost features live here.
 ## Quick start
 
 ```bash
+export DOCKER_BUILDKIT=1                    # required for the ckb image's cargo cache mounts
 cp deploy/.env.example deploy/.env          # dev creds, never committed
 docker compose -f deploy/docker-compose.dev.yml --env-file deploy/.env up -d --build
 deploy/scripts/fund-regtest.sh              # regtest coins + LN channel hub->payee
 deploy/scripts/smoke-cch.sh                 # stock CCH swap -> prints order at Success
+```
+
+The `ckb` image builds `udt-init` from the vendored fiber Rust source
+(`deploy/images/chain-init/Dockerfile`), which is a ~7min cold compile.
+With `DOCKER_BUILDKIT=1` set, the cargo registry and build cache persist
+across builds (`--mount=type=cache`), so rebuilds after the first one only
+recompile changed code — normally well under a minute.
+
+To skip the compile entirely on rebuilds/CI (once you already have a
+binary from a prior build):
+
+```bash
+# one-time, after any normal build: copy the compiled binary out
+docker cp bifrost-dev-ckb-1:/usr/local/bin/udt-init deploy/vendor/udt-init
+
+# on every subsequent build, point at it and select the prebuilt stage —
+# BuildKit then never enters the udt-builder (cargo) stage at all
+UDT_INIT_BIN=deploy/vendor/udt-init UDT_INIT_STAGE=udt-prebuilt \
+  docker compose -f deploy/docker-compose.dev.yml --env-file deploy/.env up -d --build
 ```
 
 ## Topology (mirrors upstream fiber e2e CI, one compose service per process)
@@ -49,7 +69,18 @@ fiber v0.9.0-rc7 · ckb v0.202.0 · ckb-cli v1.15.0 · lnd v0.19.2-beta · bitco
 
 ## Reset
 
+`deploy/vendor` is a BIND mount, not a named volume, and the containers write
+chain/node state into it AS ROOT — so `docker compose down -v` alone doesn't
+clean it, and a plain host-side `git clean -fdx deploy/vendor` fails with
+"Permission denied" on the root-owned files (and, if you push through the
+warnings, deletes `tests/nodes/deployer/dev.toml` and `.../deployer/config.yml`,
+static upstream fixtures that nothing regenerates — recoverable only from the
+pinned upstream tag). Use the shared helper instead, which cleans the bind
+mount from inside a throwaway root container and leaves those fixtures alone:
+
 ```bash
-docker compose -f deploy/docker-compose.dev.yml down -v
-git clean -fdx deploy/vendor   # removes generated chain/node state
+source deploy/scripts/lib.sh && fresh_reprovision
 ```
+
+`deploy/scripts/smoke-cch.sh --fresh` and `deploy/scripts/smoke-bifrost.sh --fresh`
+call this for you.

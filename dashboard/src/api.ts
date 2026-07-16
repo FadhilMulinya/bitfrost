@@ -1,6 +1,6 @@
 /** Data layer: REST fetchers + a WS hook. All shapes come from mock/contract.ts. */
 import { useEffect, useRef, useState } from "react";
-import type { Order } from "@bifrost/sdk";
+import type { Order } from "bifrost-sdk";
 import {
   ENDPOINTS,
   type HealthReport,

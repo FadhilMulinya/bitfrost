@@ -12,7 +12,7 @@ import {
   signingDigest,
   verifyAdvertisement,
   type Advertisement,
-} from "@bifrost/sdk";
+} from "bifrost-sdk";
 import { openStore } from "../src/db.js";
 import { buildServer, MAX_AD_AGE_MS, MAX_CLOCK_SKEW_MS } from "../src/server.js";
 

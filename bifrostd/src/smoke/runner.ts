@@ -27,7 +27,7 @@ import { encodeU128Hex, encodeU64Hex } from "../fnn/codec.js";
 import { OrderEngine } from "../orders/engine.js";
 import { fiberPorts, lightningPorts } from "../orders/ports.js";
 import { FileOrderStore } from "../orders/store.js";
-import { outgoingBlocksToMs, incomingBlocksToMs, type Order, type OrderState } from "@bifrost/sdk";
+import { outgoingBlocksToMs, incomingBlocksToMs, type Order, type OrderState } from "bifrost-sdk";
 
 const HOUR = 3_600_000;
 const env = (k: string, dflt?: string): string => {
@@ -260,7 +260,15 @@ async function lnToFiber(
   if (done.incoming.preimage !== clientPreimage) throw new Error("hub settled with a preimage that is not the payee's — impossible unless I1 broke");
 
   log("5. verifying node-side truth: client invoice Paid, payee payment SUCCEEDED");
-  const cliInv = await fnnClient.call<{ status: string }>("get_invoice", { payment_hash: paymentHash });
+  // The OrderEngine settles off the PutPreimage store change, which can win a
+  // race against FNN's own invoice-status write landing — poll briefly for
+  // eventual consistency instead of reading once immediately after SUCCEEDED.
+  let cliInv: { status: string } = { status: "" };
+  for (let i = 0; i < 10; i++) {
+    cliInv = await fnnClient.call<{ status: string }>("get_invoice", { payment_hash: paymentHash });
+    if (cliInv.status === "Paid") break;
+    await new Promise((r) => setTimeout(r, 300));
+  }
   if (cliInv.status !== "Paid") throw new Error(`client fiber invoice status ${cliInv.status}, expected Paid`);
   const payeeStatus = await payeeSend;
   if (payeeStatus !== "SUCCEEDED") throw new Error(`payee LN payment status ${payeeStatus}, expected SUCCEEDED`);

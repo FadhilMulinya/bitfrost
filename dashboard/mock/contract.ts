@@ -11,7 +11,7 @@
  * endpoint for it. Tracked as a spec change proposal; the path is stable and
  * operator-authed like /v1/inventory. Never silently diverge further.
  */
-import type { Order, OrderState } from "@bifrost/sdk";
+import type { Order, OrderState } from "bifrost-sdk";
 
 export const ENDPOINTS = {
   orders: "/v1/orders",

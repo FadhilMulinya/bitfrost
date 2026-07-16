@@ -11,3 +11,4 @@ vendor/fiber-0.9.0-rc7/tests/nodes/*/config.yml
 vendor/fiber-0.9.0-rc7/tests/nodes/*/dev.toml
 vendor/fiber-0.9.0-rc7/tests/nodes/*/fiber/store/
 vendor/fiber-0.9.0-rc7/.chain-ready
+.smoke-state/
