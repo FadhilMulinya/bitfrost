@@ -81,6 +81,22 @@ export class LightningAdapter {
     return { paymentRequest: res.payment_request, paymentHash: p.paymentHash };
   }
 
+  /**
+   * lnrpc.Lightning/AddInvoice — a REGULAR (non-hold) invoice: LND generates
+   * its own preimage and settles automatically on payment. Used only for
+   * demo/dev invoice generation (bifrostd/src/api/server.ts's
+   * GET /v1/demo/invoice) — never part of the swap money path, which always
+   * uses addHoldInvoice so the hub controls settlement (PROTOCOL §5, R1).
+   */
+  async addInvoice(p: { amountSat: bigint; memo?: string }): Promise<Bolt11> {
+    if (p.amountSat < 0n) throw new AdapterError("lightning", "addInvoice", "negative amount", false);
+    const res = await this.transport.post<{ payment_request: string; r_hash: string }>("/v1/invoices", {
+      value: p.amountSat.toString(), // int64 → JSON string
+      ...(p.memo !== undefined ? { memo: p.memo } : {}),
+    });
+    return { paymentRequest: res.payment_request, paymentHash: base64ToHex(res.r_hash) };
+  }
+
   /** invoicesrpc.SettleInvoice — keyed by preimage (LND derives the hash). */
   async settleHoldInvoice(preimage: Hash256): Promise<void> {
     assertHash256(preimage, "preimage");

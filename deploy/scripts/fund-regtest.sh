@@ -16,10 +16,24 @@ lnd_synced() {
 retry 60 2 "both LNDs synced to chain" lnd_synced
 
 echo "[fund] funding lnd-hub with 5 BTC"
+hub_confirmed_balance() {
+  # walletbalance's JSON has TWO "confirmed_balance" keys (top-level +
+  # nested under account_balance.default) — take only the first (top-level).
+  lncli_hub walletbalance | grep -o '"confirmed_balance": *"[0-9]\+"' | head -1 | grep -o '[0-9]\+'
+}
+BALANCE_BEFORE=$(hub_confirmed_balance)
 HUB_ADDR=$(lncli_hub newaddress p2tr | grep -o '"address": *"[^"]*"' | sed 's/.*"\(bcrt[^"]*\)".*/\1/')
 btc sendtoaddress "$HUB_ADDR" 5 >/dev/null
 btc generatetoaddress 1 "$MINE_ADDR" >/dev/null
-hub_funded() { lncli_hub walletbalance | grep -q '"confirmed_balance": "500000000"'; }
+# Exact-equality against a fresh-wallet baseline (500000000) breaks on a
+# warm/already-funded lnd-hub wallet (e.g. re-running against a long-lived
+# stack) — check for the expected increase over whatever it started at.
+TARGET_BALANCE=$((BALANCE_BEFORE + 500000000))
+hub_funded() {
+  local bal
+  bal=$(hub_confirmed_balance)
+  [ -n "$bal" ] && [ "$bal" -ge "$TARGET_BALANCE" ]
+}
 retry 30 2 "lnd-hub wallet balance confirmed" hub_funded
 
 PAYEE_KEY=$(lncli_payee getinfo | grep -o '"identity_pubkey": *"[^"]*"' | sed 's/.*"\([0-9a-f]\{66\}\)".*/\1/')
