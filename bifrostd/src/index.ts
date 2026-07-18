@@ -12,7 +12,7 @@
  */
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { loadRequiredEnv } from "./config.js";
+import { resolveHubConfig } from "./config.js";
 import { FiberAdapter } from "./adapters/fiber.js";
 import { LightningAdapter } from "./adapters/lightning.js";
 import { WsJsonRpc, HttpJsonRpc, LndRestHttp } from "./adapters/transport.js";
@@ -32,13 +32,15 @@ const env = (k: string, dflt?: string): string => {
   return v;
 };
 
-// Fail fast on missing required vars, before anything else touches them —
-// one clear message listing everything missing, then a clean exit(1).
-const requiredEnv = loadRequiredEnv();
+// Fail fast on missing/invalid config, before anything else touches it — one
+// clear message listing everything missing, then a clean exit(1). Resolves
+// HUB_MODE (dev/managed/external), the hub signing key, and the LND/FNN
+// connection details (see deploy/.env.example and docs/EXTERNAL-NODE-SETUP.md).
+const hubConfig = resolveHubConfig();
 
-const FNN_HUB_URL = env("FNN_HUB_URL", "http://127.0.0.1:21716");
-const FNN_HUB_WS = env("FNN_HUB_WS", "ws://127.0.0.1:21716");
-const LND_HUB_REST = env("LND_HUB_REST", "http://127.0.0.1:8080");
+const FNN_HUB_URL = hubConfig.fnn.url;
+const FNN_HUB_WS = hubConfig.fnn.wsUrl;
+const LND_HUB_REST = hubConfig.lnd.baseUrl;
 // dev/demo only — the payee-side LND in deploy/docker-compose.dev.yml's
 // topology (deploy/README.md), used solely by GET /v1/demo/invoice to mint
 // throwaway test invoices for demo/. Never part of the swap money path.
@@ -61,32 +63,24 @@ const API_PORT = Number(env("API_PORT", "8391"));
 // the host (outside Docker) instead.
 const API_HOST = env("API_HOST", "0.0.0.0");
 const WBTC_SCRIPT: Script = {
-  code_hash: requiredEnv.UDT_CODE_HASH,
+  code_hash: hubConfig.udt.codeHash,
   hash_type: "data2",
-  args: requiredEnv.WBTC_ARGS,
+  args: hubConfig.udt.wbtcArgs,
 };
 
-// DEV-ONLY signing key (throwaway, same convention as the vendored fiber dev
-// keys in deploy/vendor — never used for real funds). Override with
-// BIFROST_HUB_SIGNING_KEY (64 hex chars) for a stable pubkey across restarts;
-// otherwise a fresh key is generated every start (fine for local dev: quotes
-// are self-verified by the SDK against the pubkey embedded in the same
-// response, no external registry trust is involved yet).
-function hubSigningKey(): Uint8Array {
-  const hex = process.env["BIFROST_HUB_SIGNING_KEY"];
-  if (hex) {
-    if (!/^[0-9a-fA-F]{64}$/.test(hex)) throw new Error("BIFROST_HUB_SIGNING_KEY must be 64 hex chars");
-    return Buffer.from(hex, "hex");
-  }
-  return crypto.getRandomValues(new Uint8Array(32));
-}
-
 const log = (msg: string): void => console.log(`[bifrostd] ${msg}`);
+log(`starting in HUB_MODE=${hubConfig.mode}, hub pubkey ${hubConfig.hubPubkeyHex}`);
 
 async function main(): Promise<void> {
   const fnnHubWs = new FiberAdapter({ transport: new WsJsonRpc(FNN_HUB_WS), currency: "Fibd" });
   const fnnHubHttp = new FiberAdapter({ transport: new HttpJsonRpc({ url: FNN_HUB_URL }), currency: "Fibd" });
-  const lndHub = new LightningAdapter({ transport: new LndRestHttp({ baseUrl: LND_HUB_REST, allowSelfSigned: LND_HUB_REST.startsWith("https") }) });
+  const lndHub = new LightningAdapter({
+    transport: new LndRestHttp({
+      baseUrl: LND_HUB_REST,
+      ...(hubConfig.lnd.macaroonHex !== undefined ? { macaroonHex: hubConfig.lnd.macaroonHex } : {}),
+      allowSelfSigned: hubConfig.lnd.allowSelfSigned,
+    }),
+  });
   const lndPayee = new LightningAdapter({ transport: new LndRestHttp({ baseUrl: LND_PAYEE_REST, allowSelfSigned: LND_PAYEE_REST.startsWith("https") }) });
   const fnnClient = new FiberAdapter({ transport: new HttpJsonRpc({ url: FNN_CLIENT_URL }), currency: "Fibd" });
 
@@ -104,7 +98,7 @@ async function main(): Promise<void> {
   });
 
   const quoteService = new QuoteService({
-    privkey: hubSigningKey(),
+    privkey: hubConfig.hubSigningKey,
     // 1:1 wBTC-unit:sat parity, no spread/fee — the stock-CCH demo
     // convention (see smoke/runner.ts). Feed-backed / inventory-skew
     // strategies are unit-tested (rfq/) but not wired to this gateway yet.
