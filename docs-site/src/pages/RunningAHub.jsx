@@ -16,7 +16,16 @@ export default function RunningAHub() {
         <li>Earns the spread between what it charges and its own network fees</li>
       </ol>
 
-      <h2 id="requirements">Requirements</h2>
+      <h2 id="requirements">
+        Requirements{" "}
+        <a
+          href="#requirements"
+          className="section-anchor"
+          aria-label="Link to Requirements section"
+        >
+          §
+        </a>
+      </h2>
       <ul style={{ margin: "1rem 0 1rem 1.5rem" }}>
         <li>Docker and Docker Compose</li>
         <li>Node.js 20+</li>
@@ -25,7 +34,16 @@ export default function RunningAHub() {
         <li>A funded Fiber node and a funded Lightning node, with channels open to real counterparties</li>
       </ul>
 
-      <h2 id="economics">Economics</h2>
+      <h2 id="economics">
+        Economics{" "}
+        <a
+          href="#economics"
+          className="section-anchor"
+          aria-label="Link to Economics section"
+        >
+          §
+        </a>
+      </h2>
       <p>Worked example, pricing a 5,000-sat swap:</p>
       <CodeBlock>{`Customer sends:     650,000 shannon (Fiber)
 Merchant receives:  5,000 sat (Lightning)
@@ -38,7 +56,16 @@ At 100 swaps/day:    ~1,000 sat/day in spread`}</CodeBlock>
         ppm.
       </p>
 
-      <h2 id="docker-setup">Quick start</h2>
+      <h2 id="docker-setup">
+        Quick start{" "}
+        <a
+          href="#docker-setup"
+          className="section-anchor"
+          aria-label="Link to Quick start section"
+        >
+          §
+        </a>
+      </h2>
       <CodeBlock>{`git clone https://github.com/FadhilMulinya/bitfrost
 cd bitfrost/deploy
 cp .env.example .env   # fill in real values, see Configuration below
@@ -46,7 +73,16 @@ docker compose -f docker-compose.dev.yml up -d
 ./scripts/fund-regtest.sh
 ./scripts/smoke-bifrost.sh`}</CodeBlock>
 
-      <h2 id="configuration">Configuration</h2>
+      <h2 id="configuration">
+        Configuration{" "}
+        <a
+          href="#configuration"
+          className="section-anchor"
+          aria-label="Link to Configuration section"
+        >
+          §
+        </a>
+      </h2>
       <p>Environment variables read from <code>deploy/.env</code>:</p>
       <table>
         <thead><tr><th>Variable</th><th>Description</th></tr></thead>
@@ -92,7 +128,16 @@ docker compose -f docker-compose.dev.yml up -d
         </tbody>
       </table>
 
-      <h2 id="liquidity-management">Liquidity management</h2>
+      <h2 id="liquidity-management">
+        Liquidity management{" "}
+        <a
+          href="#liquidity-management"
+          className="section-anchor"
+          aria-label="Link to Liquidity management section"
+        >
+          §
+        </a>
+      </h2>
       <p>
         bifrostd prices quotes against each node's live channel balances
         (<code>fiberLiquidity</code>/<code>lightningLiquidity</code>).

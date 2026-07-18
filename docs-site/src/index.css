@@ -1,3 +1,8 @@
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 60px;
+}
+
 :root {
   --bg: #ffffff;
   --fg: #000000;
@@ -183,6 +188,24 @@ nav {
   color: var(--fg);
   border-left-color: var(--fg);
   background: var(--bg-subtle);
+}
+
+/* SECTION ANCHORS */
+.section-anchor {
+  color: var(--fg-subtle);
+  text-decoration: none;
+  font-size: 0.85em;
+  margin-left: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+h2:hover .section-anchor,
+h3:hover .section-anchor {
+  opacity: 1;
+}
+.section-anchor:hover {
+  color: var(--fg);
+  background: none;
 }
 
 /* CONTENT */

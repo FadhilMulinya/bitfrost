@@ -35,7 +35,16 @@ export default function Protocol() {
         Keywords MUST, SHOULD, MAY follow RFC 2119.
       </p>
 
-      <h2 id="overview">Overview</h2>
+      <h2 id="overview">
+        Overview{" "}
+        <a
+          href="#overview"
+          className="section-anchor"
+          aria-label="Link to Overview section"
+        >
+          §
+        </a>
+      </h2>
 
       <h3>Concepts and roles</h3>
       <ul style={{ margin: "0.5rem 0 1rem 1.5rem" }}>
@@ -80,7 +89,16 @@ export default function Protocol() {
         Implementations MUST NOT emit JSON numbers for amounts.
       </p>
 
-      <h2 id="asset-references">Asset References</h2>
+      <h2 id="asset-references">
+        Asset References{" "}
+        <a
+          href="#asset-references"
+          className="section-anchor"
+          aria-label="Link to Asset References section"
+        >
+          §
+        </a>
+      </h2>
       <CodeBlock>{`{ "network": "lightning", "unit": "sat" }
 { "network": "fiber", "unit": "shannon" }
 { "network": "fiber", "unit": "udt", "udtScript": { "codeHash": "...", "hashType": "type", "args": "..." } }`}</CodeBlock>
@@ -99,7 +117,16 @@ export default function Protocol() {
         </li>
       </ul>
 
-      <h2 id="quotes">Quotes</h2>
+      <h2 id="quotes">
+        Quotes{" "}
+        <a
+          href="#quotes"
+          className="section-anchor"
+          aria-label="Link to Quotes section"
+        >
+          §
+        </a>
+      </h2>
 
       <h3>QuoteRequest (client to hub)</h3>
       <p><code>POST /v1/quotes</code></p>
@@ -165,7 +192,16 @@ export default function Protocol() {
         </li>
       </ul>
 
-      <h2 id="orders">Orders</h2>
+      <h2 id="orders">
+        Orders{" "}
+        <a
+          href="#orders"
+          className="section-anchor"
+          aria-label="Link to Orders section"
+        >
+          §
+        </a>
+      </h2>
 
       <h3>OrderCreate (client to hub)</h3>
       <p><code>POST /v1/orders</code></p>
@@ -261,7 +297,16 @@ INCOMING_HELD | OUTGOING_IN_FLIGHT -> REFUNDING -> FAILED`}</CodeBlock>
         REFUNDING (rule R3).
       </p>
 
-      <h2 id="advertisements">Advertisements</h2>
+      <h2 id="advertisements">
+        Advertisements{" "}
+        <a
+          href="#advertisements"
+          className="section-anchor"
+          aria-label="Link to Advertisements section"
+        >
+          §
+        </a>
+      </h2>
       <p>Hub to registry, <code>POST /ads</code> on a registry.</p>
       <CodeBlock>{`{
   "protocol": "bifrost/0.1",
@@ -288,7 +333,16 @@ INCOMING_HELD | OUTGOING_IN_FLIGHT -> REFUNDING -> FAILED`}</CodeBlock>
         </li>
       </ul>
 
-      <h2 id="error-codes">Error Codes</h2>
+      <h2 id="error-codes">
+        Error Codes{" "}
+        <a
+          href="#error-codes"
+          className="section-anchor"
+          aria-label="Link to Error Codes section"
+        >
+          §
+        </a>
+      </h2>
       <p>Every non-2xx response and every terminal failure embeds:</p>
       <CodeBlock>{`{ "error": { "code": "NO_ROUTE", "message": "no route to destination on lightning",
              "hint": "the destination may lack inbound capacity; try a smaller amount",

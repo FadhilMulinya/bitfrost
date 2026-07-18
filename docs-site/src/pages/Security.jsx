@@ -6,7 +6,16 @@ export default function Security() {
     <DocsLayout>
       <h1>Security</h1>
 
-      <h2 id="trust-model">Trust model</h2>
+      <h2 id="trust-model">
+        Trust model{" "}
+        <a
+          href="#trust-model"
+          className="section-anchor"
+          aria-label="Link to Trust model section"
+        >
+          §
+        </a>
+      </h2>
       <p>A hub operator can:</p>
       <ul style={{ margin: "1rem 0 1rem 1.5rem" }}>
         <li>Set prices and refuse quotes</li>
@@ -20,7 +29,16 @@ export default function Security() {
         <li>Forge a quote or advertisement -- both are signed and verified client-side</li>
       </ul>
 
-      <h2 id="htlc-atomicity">HTLC Atomicity (Invariant I1)</h2>
+      <h2 id="htlc-atomicity">
+        HTLC Atomicity (Invariant I1){" "}
+        <a
+          href="#htlc-atomicity"
+          className="section-anchor"
+          aria-label="Link to HTLC Atomicity (Invariant I1) section"
+        >
+          §
+        </a>
+      </h2>
       <p>
         The incoming hold invoice is NEVER settled before the outgoing
         preimage is verified.
@@ -30,7 +48,16 @@ export default function Security() {
 Gated by:  state === "OUTGOING_SETTLED" && hexPreimageMatches()
 Audited:   2026-07-16 (see docs/SECURITY.md)`}</CodeBlock>
 
-      <h2 id="expiry-invariant">Expiry Invariant (I2)</h2>
+      <h2 id="expiry-invariant">
+        Expiry Invariant (I2){" "}
+        <a
+          href="#expiry-invariant"
+          className="section-anchor"
+          aria-label="Link to Expiry Invariant (I2) section"
+        >
+          §
+        </a>
+      </h2>
       <CodeBlock>{"incoming.tlcExpiryAt >= outgoing.tlcExpiryAt + minSafetyDeltaMs"}</CodeBlock>
       <p>Default <code>minSafetyDeltaMs</code>: 7,200,000 ms (2 hours).</p>
       <p>Enforced at three points:</p>
@@ -48,7 +75,16 @@ Audited:   2026-07-16 (see docs/SECURITY.md)`}</CodeBlock>
         Both directions shrink the apparent safety gap, never widen it.
       </p>
 
-      <h2 id="known-gaps">Known gaps</h2>
+      <h2 id="known-gaps">
+        Known gaps{" "}
+        <a
+          href="#known-gaps"
+          className="section-anchor"
+          aria-label="Link to Known gaps section"
+        >
+          §
+        </a>
+      </h2>
       <ul style={{ margin: "1rem 0 1rem 1.5rem" }}>
         <li>
           No API authentication. Bearer-token auth was added, then

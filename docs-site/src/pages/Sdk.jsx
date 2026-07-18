@@ -26,10 +26,28 @@ export default function Sdk() {
     <DocsLayout>
       <h1>SDK Reference</h1>
 
-      <h2 id="installation">Installation</h2>
+      <h2 id="installation">
+        Installation{" "}
+        <a
+          href="#installation"
+          className="section-anchor"
+          aria-label="Link to Installation section"
+        >
+          §
+        </a>
+      </h2>
       <pre>npm install bifrost-sdk</pre>
 
-      <h2 id="bifrost-client">Bifrost Client</h2>
+      <h2 id="bifrost-client">
+        Bifrost Client{" "}
+        <a
+          href="#bifrost-client"
+          className="section-anchor"
+          aria-label="Link to Bifrost Client section"
+        >
+          §
+        </a>
+      </h2>
       <pre>{`import { Bifrost } from "bifrost-sdk";
 
 const bf = new Bifrost({
@@ -47,14 +65,32 @@ const bf = new Bifrost({
 
       <h2>Methods</h2>
 
-      <h3 id="discover">bf.discover(pair, amount)</h3>
+      <h3 id="discover">
+        bf.discover(pair, amount){" "}
+        <a
+          href="#discover"
+          className="section-anchor"
+          aria-label="Link to bf.discover(pair, amount) section"
+        >
+          §
+        </a>
+      </h3>
       <p>
         Queries the registry for hubs advertising <code>pair</code>, verifies
         each advertisement's signature and expiry, and returns only the ones
         that pass. Throws if no <code>registryUrl</code> was configured.
       </p>
 
-      <h3 id="getquote">bf.getQuote(hubApi, request)</h3>
+      <h3 id="getquote">
+        bf.getQuote(hubApi, request){" "}
+        <a
+          href="#getquote"
+          className="section-anchor"
+          aria-label="Link to bf.getQuote(hubApi, request) section"
+        >
+          §
+        </a>
+      </h3>
       <p>
         Requests a quote directly from a hub's API URL and verifies it
         against the full PROTOCOL §9 checklist (signature, expiry, pair
@@ -63,7 +99,16 @@ const bf = new Bifrost({
         quote out of this method.
       </p>
 
-      <h3 id="getquotes">bf.getQuotes(hubs, request)</h3>
+      <h3 id="getquotes">
+        bf.getQuotes(hubs, request){" "}
+        <a
+          href="#getquotes"
+          className="section-anchor"
+          aria-label="Link to bf.getQuotes(hubs, request) section"
+        >
+          §
+        </a>
+      </h3>
       <p>
         Fans <code>getQuote</code> out across multiple hubs in parallel via{" "}
         <code>Promise.allSettled</code> and returns only the ones that
@@ -71,7 +116,16 @@ const bf = new Bifrost({
         rate.
       </p>
 
-      <h3 id="payanyinvoice">bf.payAnyInvoice(hubApi, invoice, giveAsset)</h3>
+      <h3 id="payanyinvoice">
+        bf.payAnyInvoice(hubApi, invoice, giveAsset){" "}
+        <a
+          href="#payanyinvoice"
+          className="section-anchor"
+          aria-label="Link to bf.payAnyInvoice(hubApi, invoice, giveAsset) section"
+        >
+          §
+        </a>
+      </h3>
       <p>
         Detects whether <code>invoice</code> is a Lightning (BOLT11) or Fiber
         invoice, builds a <code>PAY_INVOICE</code> quote request, verifies the
@@ -81,7 +135,16 @@ const bf = new Bifrost({
         whole-sat amount match.
       </p>
 
-      <h3 id="watchorder">bf.watchOrder(hubApi, orderId)</h3>
+      <h3 id="watchorder">
+        bf.watchOrder(hubApi, orderId){" "}
+        <a
+          href="#watchorder"
+          className="section-anchor"
+          aria-label="Link to bf.watchOrder(hubApi, orderId) section"
+        >
+          §
+        </a>
+      </h3>
       <p>
         An async generator that opens a WebSocket to the hub's stream
         endpoint and yields <code>Order</code> updates for{" "}
@@ -95,7 +158,16 @@ const bf = new Bifrost({
         → Try these methods live in the API Playground
       </Link>
 
-      <h2 id="types">Types</h2>
+      <h2 id="types">
+        Types{" "}
+        <a
+          href="#types"
+          className="section-anchor"
+          aria-label="Link to Types section"
+        >
+          §
+        </a>
+      </h2>
 
       <p><code>PROTOCOL_VERSION</code> — the literal string <code>"bifrost/0.1"</code>, stamped on every signed message.</p>
 
