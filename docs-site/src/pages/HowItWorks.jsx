@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import DocsLayout from "../components/DocsLayout.jsx";
+import CodeBlock from "../components/CodeBlock.jsx";
 
 export default function HowItWorks() {
   return (
@@ -46,10 +48,14 @@ export default function HowItWorks() {
       <p>The hub can fail. It cannot steal.</p>
 
       <h2>State machine</h2>
-      <pre>{`PENDING -> INCOMING_HELD -> OUTGOING_IN_FLIGHT
+      <CodeBlock>{`PENDING -> INCOMING_HELD -> OUTGOING_IN_FLIGHT
         -> OUTGOING_SETTLED -> SUCCEEDED
 
-INCOMING_HELD -> REFUNDING -> FAILED (if outgoing fails)`}</pre>
+INCOMING_HELD -> REFUNDING -> FAILED (if outgoing fails)`}</CodeBlock>
+
+      <Link to="/docs/playground" className="callout" style={{ display: "block" }}>
+        → Try this in the API Playground
+      </Link>
     </DocsLayout>
   );
 }

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import DocsLayout from "../components/DocsLayout.jsx";
+import CodeBlock from "../components/CodeBlock.jsx";
 
 export default function QuickStart() {
   return (
@@ -9,9 +10,9 @@ export default function QuickStart() {
       <h2>Option 1: Use the live hub (no setup)</h2>
       <p>The simplest way to try Bifrost:</p>
 
-      <pre>npm install bifrost-sdk</pre>
+      <CodeBlock>{`npm install bifrost-sdk`}</CodeBlock>
 
-      <pre>{`import { Bifrost } from "bifrost-sdk";
+      <CodeBlock>{`import { Bifrost } from "bifrost-sdk";
 
 const HUB = "https://superb-grouse-genuinely.ngrok-free.app/v1";
 
@@ -34,13 +35,17 @@ const quote = await bf.getQuote(HUB, {
 });
 
 console.log(quote.giveAmount); // shannon to pay
-console.log(quote.getAmount);  // sats merchant receives`}</pre>
+console.log(quote.getAmount);  // sats merchant receives`}</CodeBlock>
 
       <p>
         This hub currently has no API-key auth (see{" "}
         <Link to="/docs/security#known-gaps">Known Gaps</Link>) and is a
         demo instance, not a production deployment.
       </p>
+
+      <Link to="/docs/playground" className="callout" style={{ display: "block" }}>
+        → Try this in the API Playground
+      </Link>
 
       <h2>Option 2: Run your own hub</h2>
       <p>

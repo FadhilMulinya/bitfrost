@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Nav from "./components/Nav.jsx";
 import Landing from "./pages/Landing.jsx";
 import Introduction from "./pages/Introduction.jsx";
 import QuickStart from "./pages/QuickStart.jsx";
@@ -7,10 +8,12 @@ import Protocol from "./pages/Protocol.jsx";
 import Sdk from "./pages/Sdk.jsx";
 import RunningAHub from "./pages/RunningAHub.jsx";
 import Security from "./pages/Security.jsx";
+import Playground from "./pages/Playground.jsx";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Nav />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/docs/introduction" element={<Introduction />} />
@@ -20,6 +23,7 @@ export default function App() {
         <Route path="/docs/sdk" element={<Sdk />} />
         <Route path="/docs/running-a-hub" element={<RunningAHub />} />
         <Route path="/docs/security" element={<Security />} />
+        <Route path="/docs/playground" element={<Playground />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,4 +1,5 @@
 import DocsLayout from "../components/DocsLayout.jsx";
+import CodeBlock from "../components/CodeBlock.jsx";
 
 const ERROR_CODES = [
   ["PAIR_UNSUPPORTED", "Requested asset pair not offered by this hub"],
@@ -80,9 +81,9 @@ export default function Protocol() {
       </p>
 
       <h2 id="asset-references">Asset References</h2>
-      <pre>{`{ "network": "lightning", "unit": "sat" }
+      <CodeBlock>{`{ "network": "lightning", "unit": "sat" }
 { "network": "fiber", "unit": "shannon" }
-{ "network": "fiber", "unit": "udt", "udtScript": { "codeHash": "...", "hashType": "type", "args": "..." } }`}</pre>
+{ "network": "fiber", "unit": "udt", "udtScript": { "codeHash": "...", "hashType": "type", "args": "..." } }`}</CodeBlock>
       <ul style={{ margin: "0.5rem 0 1rem 1.5rem" }}>
         <li><code>network</code> MUST be "lightning" or "fiber".</li>
         <li>
@@ -102,14 +103,14 @@ export default function Protocol() {
 
       <h3>QuoteRequest (client to hub)</h3>
       <p><code>POST /v1/quotes</code></p>
-      <pre>{`{
+      <CodeBlock>{`{
   "protocol": "bifrost/0.1",
   "pair": { "give": {"network":"fiber","unit":"shannon"},
             "get":  {"network":"lightning","unit":"sat"} },
   "amount": { "side": "get", "value": "50000" },
   "mode": "PAY_INVOICE",
   "targetInvoice": "lnbc500u1p..."
-}`}</pre>
+}`}</CodeBlock>
       <ul style={{ margin: "0.5rem 0 1rem 1.5rem" }}>
         <li>
           <code>mode</code> is PAY_INVOICE or RECEIVE. PAY_INVOICE: client
@@ -124,7 +125,7 @@ export default function Protocol() {
       </ul>
 
       <h3>Quote (hub to client)</h3>
-      <pre>{`{
+      <CodeBlock>{`{
   "protocol": "bifrost/0.1",
   "quoteId": "01J9...ULID",
   "pair": { "give": {...}, "get": {...} },
@@ -138,7 +139,7 @@ export default function Protocol() {
   "minSafetyDeltaMs": 7200000,
   "hubPubkey": "ab34...",
   "signature": "9f1c..."
-}`}</pre>
+}`}</CodeBlock>
       <p>Semantics:</p>
       <ul style={{ margin: "0.5rem 0 1rem 1.5rem" }}>
         <li>
@@ -168,9 +169,9 @@ export default function Protocol() {
 
       <h3>OrderCreate (client to hub)</h3>
       <p><code>POST /v1/orders</code></p>
-      <pre>{`{ "protocol": "bifrost/0.1",
+      <CodeBlock>{`{ "protocol": "bifrost/0.1",
   "quoteId": "01J9...",
-  "targetInvoice": "lnbc500u1p..." }`}</pre>
+  "targetInvoice": "lnbc500u1p..." }`}</CodeBlock>
       <p>
         For mode:RECEIVE quotes, targetInvoice is the client's own invoice
         on the get network (client-generated, so the client controls the
@@ -182,7 +183,7 @@ export default function Protocol() {
 
       <h3>Order (hub to client)</h3>
       <p>Returned on create and on every read/stream event.</p>
-      <pre>{`{
+      <CodeBlock>{`{
   "protocol": "bifrost/0.1",
   "orderId": "01J9...",
   "quoteId": "01J9...",
@@ -195,12 +196,12 @@ export default function Protocol() {
                 "tlcExpiryAt": 1752512400000, "status": "WAITING" },
   "failure": null,
   "createdAt": 1752505206000, "updatedAt": 1752505206000
-}`}</pre>
+}`}</CodeBlock>
 
       <p>State machine (normative):</p>
-      <pre>{`PENDING -> INCOMING_HELD -> OUTGOING_IN_FLIGHT -> OUTGOING_SETTLED -> SUCCEEDED
+      <CodeBlock>{`PENDING -> INCOMING_HELD -> OUTGOING_IN_FLIGHT -> OUTGOING_SETTLED -> SUCCEEDED
 PENDING -> FAILED                      (expiry, cancel)
-INCOMING_HELD | OUTGOING_IN_FLIGHT -> REFUNDING -> FAILED`}</pre>
+INCOMING_HELD | OUTGOING_IN_FLIGHT -> REFUNDING -> FAILED`}</CodeBlock>
 
       <p>Normative transition rules:</p>
       <ul style={{ margin: "0.5rem 0 1rem 1.5rem" }}>
@@ -262,7 +263,7 @@ INCOMING_HELD | OUTGOING_IN_FLIGHT -> REFUNDING -> FAILED`}</pre>
 
       <h2 id="advertisements">Advertisements</h2>
       <p>Hub to registry, <code>POST /ads</code> on a registry.</p>
-      <pre>{`{
+      <CodeBlock>{`{
   "protocol": "bifrost/0.1",
   "hubPubkey": "ab34...",
   "endpoints": { "api": "https://hub.example.com/v1" },
@@ -271,7 +272,7 @@ INCOMING_HELD | OUTGOING_IN_FLIGHT -> REFUNDING -> FAILED`}</pre>
   "issuedAt": 1752505200000,
   "ttlMs": 3600000,
   "signature": "..."
-}`}</pre>
+}`}</CodeBlock>
       <ul style={{ margin: "0.5rem 0 1rem 1.5rem" }}>
         <li>Registries MUST verify the signature and MUST reject issuedAt older than 5 minutes (anti-replay) or in the future by more than 60s.</li>
         <li>Ads expire at issuedAt + ttlMs; hubs SHOULD republish at or before ttl/2.</li>
@@ -289,9 +290,9 @@ INCOMING_HELD | OUTGOING_IN_FLIGHT -> REFUNDING -> FAILED`}</pre>
 
       <h2 id="error-codes">Error Codes</h2>
       <p>Every non-2xx response and every terminal failure embeds:</p>
-      <pre>{`{ "error": { "code": "NO_ROUTE", "message": "no route to destination on lightning",
+      <CodeBlock>{`{ "error": { "code": "NO_ROUTE", "message": "no route to destination on lightning",
              "hint": "the destination may lack inbound capacity; try a smaller amount",
-             "retryable": true, "orderId": "01J9..." } }`}</pre>
+             "retryable": true, "orderId": "01J9..." } }`}</CodeBlock>
       <p>
         hint is human-readable and non-normative. retryable tells clients
         whether the identical request may succeed later. This is a closed

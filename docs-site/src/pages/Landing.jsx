@@ -1,41 +1,42 @@
 import { Link } from "react-router-dom";
+import CodeBlock from "../components/CodeBlock.jsx";
 
 const HUB_HEALTH_URL = "https://superb-grouse-genuinely.ngrok-free.app/v1/health";
 const GITHUB_URL = "https://github.com/FadhilMulinya/bitfrost";
 
 export default function Landing() {
   return (
-    <div className="container" style={{ maxWidth: 600, textAlign: "left" }}>
-      <h1>Bifrost</h1>
+    <div className="landing">
+      <div className="landing-hero">
+        <h1 className="landing-title">Bifrost</h1>
+        <p className="landing-tagline">
+          Send sats. Receive shannon.
+          <br />
+          Send shannon. Receive sats.
+          <br />
+          A bridge between Fiber and Lightning. No custodian. No trust. Under 1s.
+        </p>
 
-      <p>Send sats. Receive shannon.</p>
-      <p>Send shannon. Receive sats.</p>
-      <p style={{ marginTop: "1rem" }}>A bridge between Fiber and Lightning.</p>
-      <p>No custodian. No trust. Under 1s.</p>
+        <div className="landing-actions">
+          <Link to="/docs/introduction" className="btn-primary">
+            Read the docs
+          </Link>
+          <a href={GITHUB_URL} className="btn-secondary" target="_blank" rel="noreferrer">
+            View on GitHub
+          </a>
+        </div>
 
-      <p style={{ marginTop: "1.5rem" }}>
-        <Link to="/docs/introduction" className="tag">
-          Read the docs
-        </Link>{" "}
-        <a href={GITHUB_URL} className="tag" target="_blank" rel="noreferrer">
-          View on GitHub
-        </a>
-      </p>
+        <p>Live hub:</p>
+        <p>
+          <a href={HUB_HEALTH_URL} target="_blank" rel="noreferrer">
+            {HUB_HEALTH_URL}
+          </a>
+        </p>
+      </div>
 
-      <hr />
+      <CodeBlock>npm install bifrost-sdk</CodeBlock>
 
-      <p>Live hub:</p>
-      <p>
-        <a href={HUB_HEALTH_URL} target="_blank" rel="noreferrer">
-          {HUB_HEALTH_URL}
-        </a>
-      </p>
-
-      <p style={{ marginTop: "1rem" }}>
-        <code>npm install bifrost-sdk</code>
-      </p>
-
-      <hr />
+      <hr className="divider" />
 
       <h3>How it works:</h3>
       <p>1. Merchant has a Lightning invoice</p>
@@ -47,7 +48,7 @@ export default function Landing() {
       <p>The HTLC hash locks both legs.</p>
       <p>Payment fails = full refund.</p>
 
-      <hr />
+      <hr className="divider" />
 
       <p>Built for the Gone in 60ms</p>
       <p>Fiber Network Infrastructure Hackathon</p>

@@ -6,18 +6,21 @@ export default function DocsLayout({ children }) {
   const currentPath = location.pathname + location.hash;
 
   return (
-    <div className="sidebar-layout">
+    <div className="docs-layout">
       <aside className="sidebar">
-        <Link to="/">Bifrost</Link>
         {SIDEBAR.map((section) => (
-          <div key={section.title}>
-            <div className="section-title">{section.title}</div>
+          <div className="sidebar-section" key={section.title}>
+            <div className="sidebar-title">{section.title}</div>
             {section.items.map((item) => {
               const isActive =
                 currentPath === item.to ||
                 (!item.to.includes("#") && location.pathname === item.to);
               return (
-                <Link key={item.to} to={item.to} className={isActive ? "active" : undefined}>
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`sidebar-link ${isActive ? "active" : ""}`}
+                >
                   {item.label}
                 </Link>
               );
@@ -25,7 +28,7 @@ export default function DocsLayout({ children }) {
           </div>
         ))}
       </aside>
-      <main className="container">{children}</main>
+      <main className="content">{children}</main>
     </div>
   );
 }

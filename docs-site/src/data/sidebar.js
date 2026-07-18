@@ -52,4 +52,8 @@ export const SIDEBAR = [
       { label: "Known Gaps", to: "/docs/security#known-gaps" },
     ],
   },
+  {
+    title: "API Playground",
+    items: [{ label: "Try it live", to: "/docs/playground" }],
+  },
 ];
