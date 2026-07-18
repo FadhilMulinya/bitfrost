@@ -39,6 +39,15 @@ const requiredEnv = loadRequiredEnv();
 const FNN_HUB_URL = env("FNN_HUB_URL", "http://127.0.0.1:21716");
 const FNN_HUB_WS = env("FNN_HUB_WS", "ws://127.0.0.1:21716");
 const LND_HUB_REST = env("LND_HUB_REST", "http://127.0.0.1:8080");
+// dev/demo only — the payee-side LND in deploy/docker-compose.dev.yml's
+// topology (deploy/README.md), used solely by GET /v1/demo/invoice to mint
+// throwaway test invoices for demo/. Never part of the swap money path.
+const LND_PAYEE_REST = env("LND_PAYEE_REST", "http://127.0.0.1:8180");
+// dev/demo only — the client-side FNN in deploy/docker-compose.dev.yml's
+// topology, used solely by POST /v1/demo/pay to simulate a customer's Fiber
+// wallet paying the hold invoice (no real Fiber wallet exists yet for
+// testnet/regtest). Never part of the swap money path.
+const FNN_CLIENT_URL = env("FNN_CLIENT_URL", "http://127.0.0.1:21714");
 const MIN_SAFETY_DELTA_MS = Number(env("MIN_SAFETY_DELTA_MS", String(2 * HOUR)));
 const MAX_INCOMING_HOLD_MS = Number(env("MAX_INCOMING_HOLD_MS", String(21 * HOUR))); // covers the 16-21h FNN hold window used across this repo
 const API_PORT = Number(env("API_PORT", "8391"));
@@ -78,6 +87,8 @@ async function main(): Promise<void> {
   const fnnHubWs = new FiberAdapter({ transport: new WsJsonRpc(FNN_HUB_WS), currency: "Fibd" });
   const fnnHubHttp = new FiberAdapter({ transport: new HttpJsonRpc({ url: FNN_HUB_URL }), currency: "Fibd" });
   const lndHub = new LightningAdapter({ transport: new LndRestHttp({ baseUrl: LND_HUB_REST, allowSelfSigned: LND_HUB_REST.startsWith("https") }) });
+  const lndPayee = new LightningAdapter({ transport: new LndRestHttp({ baseUrl: LND_PAYEE_REST, allowSelfSigned: LND_PAYEE_REST.startsWith("https") }) });
+  const fnnClient = new FiberAdapter({ transport: new HttpJsonRpc({ url: FNN_CLIENT_URL }), currency: "Fibd" });
 
   const storePath = env("ORDER_STORE_PATH", "/tmp/bifrostd/orders.jsonl");
   mkdirSync(dirname(storePath), { recursive: true });
@@ -137,6 +148,8 @@ async function main(): Promise<void> {
     quoteService,
     fnnHub: fnnHubHttp,
     lndHub,
+    lndPayee,
+    fnnClient,
     stream,
     minSafetyDeltaMs: MIN_SAFETY_DELTA_MS,
     maxIncomingHoldMs: MAX_INCOMING_HOLD_MS,

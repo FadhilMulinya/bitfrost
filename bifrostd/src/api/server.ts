@@ -43,6 +43,15 @@ import type { StreamHub } from "./stream.js";
 
 const PAGE_SIZE = 50;
 
+// Fail-closed: the demo/dev endpoints (invoice generation, simulated
+// payment) default OFF and require an explicit opt-in, rather than
+// defaulting ON and requiring NODE_ENV==='production' to remember to turn
+// them off. handleDemoPay in particular directs a real Fiber node to pay an
+// arbitrary caller-supplied invoice with no auth and no check that it
+// belongs to a tracked order — deployments that forget to set NODE_ENV
+// would otherwise leave that reachable by anyone who can hit the API.
+const DEMO_ENDPOINTS_ENABLED = process.env["DEMO_ENDPOINTS_ENABLED"] === "true";
+
 export interface ApiServerOptions {
   port: number;
   host?: string;
@@ -52,6 +61,10 @@ export interface ApiServerOptions {
   quoteService: QuoteService;
   fnnHub: FiberAdapter;
   lndHub: LightningAdapter;
+  /** dev/demo only — payee-side LND for GET /v1/demo/invoice (see index.ts). */
+  lndPayee?: LightningAdapter;
+  /** dev/demo only — client-side FNN for POST /v1/demo/pay (see index.ts). */
+  fnnClient?: FiberAdapter;
   stream: StreamHub;
   minSafetyDeltaMs: number;
   maxIncomingHoldMs: number;
@@ -198,18 +211,99 @@ export function startApiServer(opts: ApiServerOptions) {
     }
   }
 
+  /**
+   * GET /v1/demo/invoice?amt=&memo= — dev-only helper that mints a throwaway
+   * regular (non-hold) invoice from the payee-side LND, for demo/'s
+   * "Generate Test Invoice" button. Never part of the swap money path
+   * (see LightningAdapter.addInvoice's own doc comment) and off by default
+   * (see DEMO_ENDPOINTS_ENABLED above) so a real hub never exposes invoice
+   * generation unless someone deliberately opts in.
+   */
+  async function handleDemoInvoice(req: IncomingMessage, res: ServerResponse, url: URL): Promise<void> {
+    if (!DEMO_ENDPOINTS_ENABLED) {
+      return errorEnvelope(res, 404, { code: "INTERNAL", message: "not found", retryable: false });
+    }
+    if (!opts.lndPayee) {
+      return errorEnvelope(res, 404, { code: "INTERNAL", message: "demo invoice endpoint not configured (no lndPayee adapter)", retryable: false });
+    }
+    const amtParam = url.searchParams.get("amt") ?? "1000";
+    const memo = url.searchParams.get("memo") ?? "bifrost demo payment";
+    let amountSat: bigint;
+    try {
+      amountSat = BigInt(amtParam);
+      if (amountSat < 0n) throw new Error("negative");
+    } catch {
+      return errorEnvelope(res, 400, { code: "AMOUNT_OUT_OF_BOUNDS", message: `invalid amt ${amtParam}`, retryable: false });
+    }
+    try {
+      const inv = await opts.lndPayee.addInvoice({ amountSat, memo });
+      // amount_sat is a plain JSON number here (not the bigint-string wire
+      // convention) — this endpoint is dev-only tooling, not a bifrost/0.1
+      // protocol message; demo-scale amounts are always well within
+      // Number's safe integer range.
+      return json(res, 200, { payment_request: inv.paymentRequest, amount_sat: Number(amountSat) });
+    } catch (e) {
+      const be = e instanceof BifrostError ? e : new BifrostError("INTERNAL", String(e), true);
+      return errorEnvelope(res, 502, { code: be.code, message: be.message, retryable: be.retryable });
+    }
+  }
+
+  /**
+   * POST /v1/demo/pay { fiberInvoice } — dev-only helper that simulates a
+   * customer's Fiber wallet scanning and paying the hold invoice shown on
+   * demo/'s checkout page. No real Fiber wallet exists yet for
+   * testnet/regtest end users, so this pays it from the client-side FNN
+   * node instead. Once paid, the OrderEngine's own event pumps (already
+   * running) drive the order to SUCCEEDED exactly as they would for a real
+   * wallet payment — this endpoint only dispatches the payment, nothing
+   * downstream is faked or short-circuited.
+   */
+  async function handleDemoPay(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    if (!DEMO_ENDPOINTS_ENABLED) {
+      return errorEnvelope(res, 404, { code: "INTERNAL", message: "not found", retryable: false });
+    }
+    if (!opts.fnnClient) {
+      return errorEnvelope(res, 404, { code: "INTERNAL", message: "demo pay endpoint not configured (no fnnClient adapter)", retryable: false });
+    }
+    let body: { fiberInvoice?: string };
+    try {
+      body = (await readBody(req)) as { fiberInvoice?: string };
+    } catch {
+      return errorEnvelope(res, 400, { code: "INVOICE_INVALID", message: "malformed JSON body", retryable: false });
+    }
+    if (!body.fiberInvoice) {
+      return errorEnvelope(res, 400, { code: "INVOICE_INVALID", message: "fiberInvoice required", retryable: false });
+    }
+    try {
+      // Generous demo-only constants — this simulates a customer wallet,
+      // not the hub's own outgoing leg, so it isn't bound by ExpiryGuard's
+      // minSafetyDeltaMs the way the real dispatch path is. FNN rejects
+      // tlc_expiry_limit outside (invoice's own final TLC expiry delta,
+      // observed ~24h for this repo's hold invoices) .. 14 days — 2 days
+      // comfortably clears the lower bound without approaching the upper.
+      const DEMO_TLC_EXPIRY_LIMIT_MS = 2 * 24 * 3_600_000; // 2 days, ms
+      await opts.fnnClient.sendPayment(body.fiberInvoice, 1_000_000n, DEMO_TLC_EXPIRY_LIMIT_MS);
+      return json(res, 200, { status: "paid" });
+    } catch (e) {
+      const be = e instanceof BifrostError ? e : new BifrostError("INTERNAL", String(e), true);
+      return errorEnvelope(res, 502, { code: be.code, message: be.message, retryable: be.retryable });
+    }
+  }
+
   const server = createServer((req, res) => {
     void (async () => {
       const url = new URL(req.url ?? "/", "http://localhost");
       const { pathname } = url;
 
       if (req.method === "OPTIONS") {
-        res.writeHead(204, { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST", "Access-Control-Allow-Headers": "content-type" });
+        res.writeHead(204, { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST", "Access-Control-Allow-Headers": "content-type, ngrok-skip-browser-warning" });
         return res.end();
       }
 
       if (req.method === "POST" && pathname === ENDPOINTS.quotes) return handleQuotes(req, res);
       if (req.method === "POST" && pathname === ENDPOINTS.orders) return handleCreateOrder(req, res);
+      if (req.method === "GET" && pathname === ENDPOINTS.demoInvoice) return handleDemoInvoice(req, res, url);
+      if (req.method === "POST" && pathname === ENDPOINTS.demoPay) return handleDemoPay(req, res);
 
       if (req.method === "GET" && pathname === ENDPOINTS.orders) {
         const stateFilter = url.searchParams.get("state");
@@ -221,8 +315,10 @@ export function startApiServer(opts: ApiServerOptions) {
           list = list.filter((o) => o.state === stateFilter);
         }
         const offset = Number(url.searchParams.get("cursor") ?? "0") || 0;
-        const page = list.slice(offset, offset + PAGE_SIZE);
-        const nextOffset = offset + PAGE_SIZE;
+        const limitParam = Number(url.searchParams.get("limit") ?? "");
+        const pageSize = Number.isInteger(limitParam) && limitParam > 0 ? Math.min(limitParam, PAGE_SIZE) : PAGE_SIZE;
+        const page = list.slice(offset, offset + pageSize);
+        const nextOffset = offset + pageSize;
         const result: OrdersPage = { orders: page, cursor: nextOffset < list.length ? String(nextOffset) : null };
         return json(res, 200, result);
       }

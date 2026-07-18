@@ -4,4 +4,4 @@ dist/
 .env
 **/CLAUDE.md
 .claude
-.gstack/
+.gstack

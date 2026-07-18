@@ -24,6 +24,9 @@ export const ENDPOINTS = {
   health: "/v1/health",
   quoteStats: "/v1/quotes/stats", // PROPOSED §4.5 addition — see dashboard/mock/contract.ts header
   stream: "/v1/stream",
+  demoInvoice: "/v1/demo/invoice", // dev-only, see server.ts's handleDemoInvoice
+  demoPay: "/v1/demo/pay", // dev-only, see server.ts's handleDemoPay
+
 } as const;
 
 export interface OrdersPage {
