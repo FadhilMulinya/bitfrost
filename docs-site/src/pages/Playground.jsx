@@ -61,6 +61,29 @@ function Output({ result }) {
   );
 }
 
+function DemoDisabledNotice({ onUseInvoice, buttonLabel = "Use this invoice ->" }) {
+  const [invoice, setInvoice] = useState("");
+  return (
+    <div className="callout warning" style={{ fontSize: "0.85rem" }}>
+      <p style={{ marginBottom: "0.5rem" }}>Demo endpoints are disabled on this hub.</p>
+      <p style={{ marginBottom: "0.75rem" }}>
+        To enable them, set on the hub: <code>DEMO_ENDPOINTS_ENABLED=true</code>
+      </p>
+      <p style={{ marginBottom: "0.5rem" }}>Or paste your own Lightning invoice below:</p>
+      <input
+        className="playground-input"
+        type="text"
+        placeholder="lnbcrt..."
+        value={invoice}
+        onChange={(e) => setInvoice(e.target.value)}
+      />
+      <button onClick={() => onUseInvoice(invoice)} disabled={!invoice.trim()}>
+        {buttonLabel}
+      </button>
+    </div>
+  );
+}
+
 function Panel({ title, description, note, curl, children }) {
   return (
     <div className="playground">
@@ -78,13 +101,15 @@ function Panel({ title, description, note, curl, children }) {
 }
 
 /* ---------- Panel 1: Health Check ---------- */
-function HealthPanel() {
+function HealthPanel({ demoMode, setDemoMode }) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const run = async () => {
     setLoading(true);
     setResult(await timedFetch(`${HUB}/health`));
+    const demoR = await timedFetch(`${HUB}/demo/invoice?amt=1&memo=ping`);
+    setDemoMode(demoR.status === 404 ? "off" : "on");
     setLoading(false);
   };
 
@@ -94,8 +119,19 @@ function HealthPanel() {
       description="Check if the hub is online and both nodes connected"
       curl={<CurlLine method="GET" url={`${HUB}/health`} />}
     >
-      <div className="playground-actions">
+      <div className="playground-actions" style={{ alignItems: "center" }}>
         <button onClick={run} disabled={loading}>{loading ? "Running..." : "Run"}</button>
+        {demoMode && (
+          <span
+            className="badge"
+            style={{
+              borderColor: demoMode === "on" ? "var(--success)" : "var(--fg-subtle)",
+              color: demoMode === "on" ? "var(--success)" : "var(--fg-subtle)",
+            }}
+          >
+            demo mode: {demoMode}
+          </span>
+        )}
       </div>
       <Output result={result} />
     </Panel>
@@ -188,13 +224,20 @@ function DemoInvoicePanel() {
   const [memo, setMemo] = useState("test payment");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [manualInvoice, setManualInvoice] = useState(null);
 
   const url = `${HUB}/demo/invoice?amt=${encodeURIComponent(amt)}&memo=${encodeURIComponent(memo)}`;
 
   const run = async () => {
     setLoading(true);
+    setManualInvoice(null);
     setResult(await timedFetch(url));
     setLoading(false);
+  };
+
+  const useOwnInvoice = (invoice) => {
+    setManualInvoice(invoice);
+    setResult(null);
   };
 
   return (
@@ -211,7 +254,17 @@ function DemoInvoicePanel() {
       <div className="playground-actions">
         <button onClick={run} disabled={loading}>{loading ? "Running..." : "Generate Invoice"}</button>
       </div>
-      <Output result={result} />
+      {result?.status === 404 ? (
+        <DemoDisabledNotice onUseInvoice={useOwnInvoice} />
+      ) : (
+        <Output result={result} />
+      )}
+      {manualInvoice && (
+        <p style={{ fontSize: "0.85rem", marginTop: "0.75rem" }}>
+          Using your invoice: <code>{manualInvoice}</code>. Paste it into the Get Quote
+          panel above to continue.
+        </p>
+      )}
     </Panel>
   );
 }
@@ -225,6 +278,8 @@ function SwapFlowPanel() {
   const [running, setRunning] = useState(false);
   const [orderState, setOrderState] = useState(null);
   const [finishedMs, setFinishedMs] = useState(null);
+  const [needsManualInvoice, setNeedsManualInvoice] = useState(false);
+  const [manualInvoice, setManualInvoice] = useState("");
 
   const append = (label, result) => setLog((l) => [...l, { label, result }]);
 
@@ -245,20 +300,7 @@ function SwapFlowPanel() {
     return "TIMEOUT";
   };
 
-  const run = async () => {
-    setRunning(true);
-    setLog([]);
-    setOrderState(null);
-    setFinishedMs(null);
-    const t0 = performance.now();
-    setStep(1);
-
-    const invR = await timedFetch(`${HUB}/demo/invoice?amt=5000&memo=playground-swap`);
-    append("Generate Invoice", invR);
-    if (!invR.ok || !invR.body?.payment_request) {
-      setRunning(false);
-      return;
-    }
+  const runFromInvoice = async (paymentRequest, t0) => {
     setStep(2);
 
     const quoteR = await timedFetch(`${HUB}/quotes`, {
@@ -272,7 +314,7 @@ function SwapFlowPanel() {
         },
         amount: { side: "get", value: "5000" },
         mode: "PAY_INVOICE",
-        targetInvoice: invR.body.payment_request,
+        targetInvoice: paymentRequest,
       }),
     });
     append("Get Quote", quoteR);
@@ -288,7 +330,7 @@ function SwapFlowPanel() {
       body: JSON.stringify({ protocol: "bifrost/0.1", quoteId: quoteR.body.quoteId }),
     });
     append("Create Order", orderR);
-    if (!orderR.ok || !orderR.body?.orderId) {
+    if (!orderR.ok || !orderR.body?.orderId || !orderR.body?.incoming?.invoice) {
       setRunning(false);
       return;
     }
@@ -298,7 +340,7 @@ function SwapFlowPanel() {
     const payR = await timedFetch(`${HUB}/demo/pay`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ orderId: orderR.body.orderId }),
+      body: JSON.stringify({ fiberInvoice: orderR.body.incoming.invoice }),
     });
     append("Simulate Payment", payR);
     setStep(5);
@@ -306,6 +348,37 @@ function SwapFlowPanel() {
     const finalState = await pollOrder(HUB, orderR.body.orderId, t0);
     setOrderState(finalState);
     setRunning(false);
+  };
+
+  const run = async () => {
+    setRunning(true);
+    setLog([]);
+    setOrderState(null);
+    setFinishedMs(null);
+    setNeedsManualInvoice(false);
+    const t0 = performance.now();
+    setStep(1);
+
+    const invR = await timedFetch(`${HUB}/demo/invoice?amt=5000&memo=playground-swap`);
+    if (invR.status === 404) {
+      setNeedsManualInvoice(true);
+      setRunning(false);
+      return;
+    }
+    append("Generate Invoice", invR);
+    if (!invR.ok || !invR.body?.payment_request) {
+      setRunning(false);
+      return;
+    }
+    await runFromInvoice(invR.body.payment_request, t0);
+  };
+
+  const continueWithManualInvoice = async () => {
+    if (!manualInvoice.trim()) return;
+    setNeedsManualInvoice(false);
+    setRunning(true);
+    const t0 = performance.now();
+    await runFromInvoice(manualInvoice.trim(), t0);
   };
 
   return (
@@ -331,6 +404,24 @@ function SwapFlowPanel() {
       <div className="playground-actions">
         <button onClick={run} disabled={running}>{running ? "Running..." : "Run Full Swap"}</button>
       </div>
+      {needsManualInvoice && (
+        <div className="callout warning" style={{ fontSize: "0.85rem" }}>
+          <p style={{ marginBottom: "0.5rem" }}>
+            Demo invoice generation unavailable on this hub. Paste a regtest
+            Lightning invoice to continue:
+          </p>
+          <input
+            className="playground-input"
+            type="text"
+            placeholder="lnbcrt..."
+            value={manualInvoice}
+            onChange={(e) => setManualInvoice(e.target.value)}
+          />
+          <button onClick={continueWithManualInvoice} disabled={!manualInvoice.trim() || running}>
+            Continue with this invoice -&gt;
+          </button>
+        </div>
+      )}
       {orderState && (
         <p style={{ fontSize: "0.85rem" }}>
           Order state: <code>{orderState}</code>
@@ -411,6 +502,8 @@ function RawRequestPanel() {
 }
 
 export default function Playground() {
+  const [demoMode, setDemoMode] = useState(null);
+
   return (
     <DocsLayout>
       <h1>API Playground</h1>
@@ -420,8 +513,13 @@ export default function Playground() {
         no mocked responses. Requests carry no auth header -- see{" "}
         <a href="/docs/security#known-gaps">Known Gaps</a> for what that means.
       </p>
+      <div className="callout warning" style={{ fontSize: "0.85rem" }}>
+        Panels 3 and 4 require <code>DEMO_ENDPOINTS_ENABLED=true</code> on
+        the hub. Run against <code>localhost:8391</code> for full demo mode,
+        or paste your own invoice to try the quote and order flow.
+      </div>
 
-      <HealthPanel />
+      <HealthPanel demoMode={demoMode} setDemoMode={setDemoMode} />
       <QuotePanel />
       <DemoInvoicePanel />
       <SwapFlowPanel />
